@@ -5,9 +5,9 @@
 clear
 close all
 addpath(genpath('../utilities'))
-
-
-OutPath = '../../out/validation/';
+DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\Nonequilibrium\Nick\';
+% DataPath = [DropboxFolder  'SweepOutput\sweeps02_sharpness_vs_precision' filesep ];
+OutPath = [DropboxFolder  'SweepOutput\gaussian_noise_tests' filesep ];
 mkdir(OutPath);
 
 % set path to approapriate functions
@@ -125,79 +125,79 @@ parfor n = 1:n_sim
   
   for rep = 1:n_traces
     
-    % initialize vector to store results
-    jump_time_vec = [];
-%     off_dwell_times = [];
-%     on_dwell_times = [];
-    initiation_count_vec = [];
-    state_vec = [randsample(state_options,1,true,ss)];    
-    total_time = 0;   
-    act_time = 0;
-    while total_time < t_sim     
-      
-      % extract state info
-      state_curr = state_vec(end);
-      active_flag_curr = ismember(state_curr,pd_states);
-      
-      % calculate jump time means
-      tau = dwell_time_vec(state_curr);    
+      % initialize vector to store results
+      jump_time_vec = [];
+  %     off_dwell_times = [];
+  %     on_dwell_times = [];
+      initiation_count_vec = [];
+      state_vec = [randsample(state_options,1,true,ss)];    
+      total_time = 0;   
+      act_time = 0;
+      while total_time < t_sim     
 
-      % randomly draw next jump time
-      dt = exprnd(tau);
-      
-      % randomly draw the number of initiation events
-%       n_pol_II = poissrnd(init_rate_vec(state_curr)*dt);
-      
-      total_time = total_time + dt;
-      act_time = act_time + dt;
-      
-      % randomly draw destination state            
-      next_state = randsample(state_options,1,true,jump_weight_array(:,state_curr));      
-      active_flag_next = ismember(next_state,pd_states);
-      
-      % assign states
-      state_vec(end+1) = next_state;
-      jump_time_vec(end+1) = dt;    
-      initiation_count_vec(end+1) = init_rate_vec(state_curr)*dt;
-      
+        % extract state info
+        state_curr = state_vec(end);
+        active_flag_curr = ismember(state_curr,pd_states);
+
+        % calculate jump time means
+        tau = dwell_time_vec(state_curr);    
+
+        % randomly draw next jump time
+        dt = exprnd(tau);
+
+        % randomly draw the number of initiation events
+  %       n_pol_II = poissrnd(init_rate_vec(state_curr)*dt);
+
+        total_time = total_time + dt;
+        act_time = act_time + dt;
+
+        % randomly draw destination state            
+        next_state = randsample(state_options,1,true,jump_weight_array(:,state_curr));      
+        active_flag_next = ismember(next_state,pd_states);
+
+        % assign states
+        state_vec(end+1) = next_state;
+        jump_time_vec(end+1) = dt;    
+        initiation_count_vec(end+1) = init_rate_vec(state_curr)*dt;
+
+      end  
+
+      % downsample and save
+      active_state_vec = double(ismember(state_vec(1:end-1),pd_states));
+      cumulative_time = [-1e-6 cumsum(jump_time_vec)];
+  %     cumulative_mRNA = [0 cumsum(jump_time_vec.*active_state_vec)];
+      cumulative_mRNA = [0 cumsum(initiation_count_vec)];
+      total_mRNA_array(:,rep) = interp1(cumulative_time,cumulative_mRNA,time_grid);
+  %     total_mRNA_array_poisson(:,rep) = interp1(cumulative_time,cumulative_mRNA_poisson,time_grid);
+
+      % calculate average dwell times in ON and OFF states
+  %     on_dwell_time_array(rep) = mean(on_dwell_times);
+  %     off_dwell_time_array(rep) = mean(off_dwell_times);
     end  
-    
-    % downsample and save
-    active_state_vec = double(ismember(state_vec(1:end-1),pd_states));
-    cumulative_time = [-1e-6 cumsum(jump_time_vec)];
-%     cumulative_mRNA = [0 cumsum(jump_time_vec.*active_state_vec)];
-    cumulative_mRNA = [0 cumsum(initiation_count_vec)];
-    total_mRNA_array(:,rep) = interp1(cumulative_time,cumulative_mRNA,time_grid);
-%     total_mRNA_array_poisson(:,rep) = interp1(cumulative_time,cumulative_mRNA_poisson,time_grid);
-    
-    % calculate average dwell times in ON and OFF states
-%     on_dwell_time_array(rep) = mean(on_dwell_times);
-%     off_dwell_time_array(rep) = mean(off_dwell_times);
-  end  
-  
-  % record average values
-  Gaussian_noise_struct(n).r_mean = mean(total_mRNA_array(end,:))/time_grid(end);
-  Gaussian_noise_struct(n).r_var = var(total_mRNA_array(end,:))/time_grid(end);
-  Gaussian_noise_struct(n).r_mean_vec = mean(total_mRNA_array,2)./time_grid';
-  Gaussian_noise_struct(n).r_var_vec = var(total_mRNA_array,[],2)./time_grid';
-%   sim_struct(n).r_mean_poisson = mean(total_mRNA_array_poisson(end,:))/time_grid(end);
-%   sim_struct(n).r_var_poisson = var(total_mRNA_array_poisson(end,:))/time_grid(end);
-  Gaussian_noise_struct(n).mRNA_array = total_mRNA_array;
-  
-%   sim_struct(n).tau_on = mean(on_dwell_time_array);
-%   sim_struct(n).tau_off = mean(off_dwell_time_array);
-%   sim_struct(n).tau_cycle = mean(on_dwell_time_array+off_dwell_time_array);
-  
-  % perform normality test
-  total_mRNA_array_norm = (total_mRNA_array - mean(total_mRNA_array,2)) ./ std(total_mRNA_array,[],2);
-  Gaussian_noise_struct(n).total_mRNA_array_norm = total_mRNA_array_norm;
-  Gaussian_noise_struct(n).p_vec = NaN(size(time_grid));
-  Gaussian_noise_struct(n).gauss_flag = NaN(size(time_grid));
-  for t = 1:length(time_grid)
-      [Gaussian_noise_struct(n).gauss_flag(t),Gaussian_noise_struct(n).p_vec(t)] = kstest(total_mRNA_array_norm(t,:));
-  end
-      
-  toc 
+
+    % record average values
+    Gaussian_noise_struct(n).r_mean = mean(total_mRNA_array(end,:))/time_grid(end);
+    Gaussian_noise_struct(n).r_var = var(total_mRNA_array(end,:))/time_grid(end);
+    Gaussian_noise_struct(n).r_mean_vec = mean(total_mRNA_array,2)./time_grid';
+    Gaussian_noise_struct(n).r_var_vec = var(total_mRNA_array,[],2)./time_grid';
+  %   sim_struct(n).r_mean_poisson = mean(total_mRNA_array_poisson(end,:))/time_grid(end);
+  %   sim_struct(n).r_var_poisson = var(total_mRNA_array_poisson(end,:))/time_grid(end);
+    Gaussian_noise_struct(n).mRNA_array = total_mRNA_array;
+
+  %   sim_struct(n).tau_on = mean(on_dwell_time_array);
+  %   sim_struct(n).tau_off = mean(off_dwell_time_array);
+  %   sim_struct(n).tau_cycle = mean(on_dwell_time_array+off_dwell_time_array);
+
+    % perform normality test
+    total_mRNA_array_norm = (total_mRNA_array - mean(total_mRNA_array,2)) ./ std(total_mRNA_array,[],2);
+    Gaussian_noise_struct(n).total_mRNA_array_norm = total_mRNA_array_norm;
+    Gaussian_noise_struct(n).p_vec = NaN(size(time_grid));
+    Gaussian_noise_struct(n).gauss_flag = NaN(size(time_grid));
+    for t = 1:length(time_grid)
+        [Gaussian_noise_struct(n).gauss_flag(t),Gaussian_noise_struct(n).p_vec(t)] = kstest(total_mRNA_array_norm(t,:));
+    end
+
+    toc 
 end
 
 % delete(h);
