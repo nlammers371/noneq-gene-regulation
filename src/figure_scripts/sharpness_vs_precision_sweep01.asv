@@ -5,7 +5,7 @@ addpath(genpath('../utilities/'))
 
 % %%%%%%%%%%%%%%%%  set relative read and write paths %%%%%%%%%%%%%%%%%%%%
 DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\Nonequilibrium\Nick\';
-DataPath = [DropboxFolder  'SweepOutput\sweeps02_sharpness_vs_precision' filesep ];
+DataPath = [DropboxFolder  'SweepOutput\sweeps02_sharpness_vs_precision_v4' filesep ];
 DataPathSupp = [DropboxFolder  'SweepOutput\sweeps01_info_vs_energy' filesep ];
 FigPath = [DropboxFolder '\manuscript\sharpness_vs_precision' filesep];
 mkdir(FigPath);
@@ -1002,7 +1002,7 @@ saveas(sharpness_plots_g,[FigPath 'sharp_curves_g.png'])
 saveas(sharpness_plots_g,[FigPath 'sharp_curves_g.pdf']) 
 
 %%
-DataPath3 = [DropboxFolder  'SweepOutput\sweeps02_sharpness_vs_precision' filesep];
+DataPath3 = [DropboxFolder  'SweepOutput\sweeps02_sharpness_vs_precision_v2' filesep];
 
 multi_bs_rate_files = dir([DataPath3 'sweep_results*g01*_eq*']);
 multi_bs_info_files = dir([DataPath3 'sweep_info*g01*_eq*']);
