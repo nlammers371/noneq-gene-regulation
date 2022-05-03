@@ -42,7 +42,7 @@ for m = 1:length(n_g_vec)
 end    
                       
 % set sim options
-sweep_options = {'n_sim',200,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, ...
+sweep_options = {'n_sim',500,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, ...
                 'useParpool',1,'TauCycleTime',1,'downsample_output',ds_flag};
 %%   
 rate_index = find(strcmp(metric_names,'ProductionRate'));
@@ -83,7 +83,7 @@ for equilibrium_flag = 0:1
             save([writePath 'sweep_results_' saveName suffix '.mat'],'sim_results', '-v7.3')
 
             toc;    
-    %         iter = iter + 1;
+    
         end
     end    
 end
