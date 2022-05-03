@@ -5,8 +5,8 @@ addpath(genpath('../utilities/'))
 
 % %%%%%%%%%%%%%%%%  set relative read and write paths %%%%%%%%%%%%%%%%%%%%
 DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\Nonequilibrium\Nick\';
-DataPath = [DropboxFolder  'SweepOutput\sweeps01_info_vs_energy_v3' filesep ];
-FigPath = [DropboxFolder '\manuscript\info_vs_energy_v2' filesep];
+DataPath = [DropboxFolder  'SweepOutput\sweeps01_info_vs_energy\' filesep ];
+FigPath = [DropboxFolder '\manuscript\info_vs_energy' filesep];
 mkdir(FigPath);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -45,7 +45,7 @@ phi_axis = phi_bins(2:end);
 ir_bound_array = NaN(length(phi_axis),length(master_struct_multi_bs));
 ir_rates_array = NaN(length(phi_axis),length(master_struct_multi_bs),size(master_struct_multi_bs(end).sweep_results.rate_array,2));
 
-for i = length(master_struct_multi_bs)%:-1:1
+for i = length(master_struct_multi_bs):-1:1
     metric_array = master_struct_multi_bs(i).sweep_results.metric_array;
     rate_array = master_struct_multi_bs(i).sweep_results.rate_array;
     phi_vec = metric_array(:,phi_index_num);
@@ -61,9 +61,9 @@ for i = length(master_struct_multi_bs)%:-1:1
         
         % deal with outliers due to numerical precision issues (NL: need to
         % resolve this)
-        if phi_bins(p+1) <= 0.1
-           ir_filtered(ir_filtered > 0.067) = NaN;
-        end
+%         if phi_bins(p+1) <= 0.1
+%            ir_filtered(ir_filtered > 0.067) = NaN;
+%         end
         if any(ir_filtered)
             [ir_bound_array(p,i), mi] = nanmax(ir_filtered*log2(exp(1))); % convert to bits
             ir_rates = rates_filtered(mi,:);
@@ -76,7 +76,7 @@ close all
 ds_factor = 3;
 color_ind = 5;
 sym_list = {'o','^','d','s','v'};
-bs_vec = 1:length(master_struct_multi_bs);
+% bs_vec = 1:length(master_struct_multi_bs);
 
 % set plot parameters
 markerSize = 50;
@@ -123,7 +123,7 @@ nan_flags = any(isnan(ir_bound_array_fit),2);
 ir_bound_array_fit = ir_bound_array_fit(~nan_flags,:);
 phi_axis = phi_axis(~nan_flags);
 
-s = [];
+% s = [];
 
 info_bs_fig = figure;
 
@@ -186,11 +186,11 @@ for i = 1:length(master_struct_multi_bs)
     ir_vec = master_struct_multi_bs(i).sweep_results.metric_array(:,ir_index_num);
     phi_vec = master_struct_multi_bs(i).sweep_results.metric_array(:,phi_index_num);
     num_err_bound = 1;
-    if i == 4
-        num_err_bound = ir_bound_array_fit(1,4)/log2(exp(1));
-    elseif i == 5
-        num_err_bound = 0.067;
-    end
+%     if i == 4
+%         num_err_bound = ir_bound_array_fit(1,4)/log2(exp(1));
+%     elseif i == 5
+%         num_err_bound = 0.067;
+%     end
     ir_options = find(phi_vec<=phi_bins(2) & ir_vec >=0 & ir_vec < num_err_bound);
     [N,~,bin] = histcounts(ir_vec(ir_options));
     plot_ids = randsample(ir_options,n_plot,true,1./N(bin));
@@ -242,11 +242,11 @@ for i = 1:length(master_struct_multi_bs)
     dt_vec = 1./master_struct_multi_bs(i).sweep_results.metric_array(:,inv_dtime_index_num );
     
     num_err_bound = 1;
-    if i == 4
-        num_err_bound = ir_bound_array_fit(1,4)/log2(exp(1));
-    elseif i == 5
-        num_err_bound = 0.067;
-    end
+%     if i == 4
+%         num_err_bound = ir_bound_array_fit(1,4)/log2(exp(1));
+%     elseif i == 5
+%         num_err_bound = 0.067;
+%     end
     dt_options = find(phi_vec<=phi_bins(2) & ir_vec >=0 & ir_vec < num_err_bound & ~isnan(dt_vec) & dt_vec <999 & dt_vec >= 0);
     [N,~,bin] = histcounts(dt_vec(dt_options),logspace(-1,3));
     plot_ids = randsample(dt_options,n_plot,true,1./N(bin));
@@ -389,7 +389,7 @@ end
 
 set(gca,'xscale','log')
 ylim([0 0.06])
-xlim([5e-3 5e3])
+xlim([5e-3 3e3])
 
 % h = colorbar;
 % ylabel(h,'number of binding sites')
@@ -403,7 +403,7 @@ set(gca,'Color',[228,221,209]/255)
 ax = gca;
 ax.YAxis(1).Color = 'k';
 ax.XAxis(1).Color = 'k';
-
+set(gca,'xtick',[1e-2 1e-1 1 1e1 1e2 1e3])
 info_g_fig.InvertHardcopy = 'off';
 set(gcf,'color','w');
 set(gca,'xscale','log')
@@ -521,8 +521,8 @@ set(gcf,'color','w');
 saveas(neq_bound_a,[FigPath 'dt_vs_a_neq.png'])
 saveas(neq_bound_a,[FigPath 'dt_vs_a_neq.pdf'])
 
-%%
-phi_min = nanmin(phi_vec(dt_vec<=7.9))
+% %%
+% phi_min = nanmin(phi_vec(dt_vec<=7.9))
 
 % %% Plot maximum IR rate vs Ng
 % ng_ir_vec_neq = nanmax(ir_gen_array);
