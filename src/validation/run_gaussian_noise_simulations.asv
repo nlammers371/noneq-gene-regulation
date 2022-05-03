@@ -197,8 +197,7 @@ parfor n = 1:n_sim
       try
           [Gaussian_noise_struct(n).gauss_flag(t),Gaussian_noise_struct(n).p_vec(t)] = kstest(total_mRNA_array_norm(t,:));
       catch
-          % do nothing
-      end
+        
   end
       
   toc 
