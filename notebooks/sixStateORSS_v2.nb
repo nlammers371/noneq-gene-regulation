@@ -1,0 +1,891 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 12.1' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     52329,        883]
+NotebookOptionsPosition[     50079,        839]
+NotebookOutlinePosition[     50478,        855]
+CellTagsIndexPosition[     50435,        852]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Basic 6 state calculations", "Title",
+ CellChangeTimes->{{3.828127857139563*^9, 
+  3.8281278616844397`*^9}},ExpressionUUID->"06823bc5-6cd3-4215-97d7-\
+1bab5af73681"],
+
+Cell["\<\
+This notebook derives symbolic expressions for the steady-state occupancy of \
+each state as a function of network transition rates. These expressions are \
+then transferred to the \[OpenCurlyDoubleQuote]sixStateSSFromMathematica\
+\[CloseCurlyDoubleQuote] function in matlab for use in further parameter \
+calculations\
+\>", "Text",
+ CellChangeTimes->{{3.828127867813302*^9, 
+  3.828127932416148*^9}},ExpressionUUID->"9ec941f6-59f6-4f51-86db-\
+2b0c9cca1c8d"],
+
+Cell[BoxData[
+ RowBox[{"Clear", "[", "\"\<Global`*\>\"", "]"}]], "Input",
+ CellLabel->"In[2]:=",ExpressionUUID->"21a974fd-0e1d-4b10-8e65-c457c6ceb89a"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"RSym", "=", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{
+         RowBox[{
+          RowBox[{"-", "cr"}], "*", "k21"}], "-", "k41", "-", "k61"}], ",", 
+        "k12", ",", "0", ",", "k14", ",", "0", ",", "k16"}], "}"}], ",", "\n",
+       "\t\t", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"cr", "*", "k21"}], ",", 
+        RowBox[{
+         RowBox[{"-", "k12"}], "-", "k32"}], ",", "k23", ",", "0", ",", "0", 
+        ",", "0"}], "}"}], ",", "\n", "\t\t", 
+      RowBox[{"{", 
+       RowBox[{"0", ",", "k32", ",", 
+        RowBox[{
+         RowBox[{"-", "k23"}], "-", "k43"}], ",", 
+        RowBox[{"cr", "*", "k34"}], ",", "0", ",", "0"}], "}"}], ",", "\n", 
+      "\t\t", 
+      RowBox[{"{", 
+       RowBox[{"k41", ",", "0", ",", "k43", ",", 
+        RowBox[{
+         RowBox[{"-", "k14"}], "-", 
+         RowBox[{"cr", "*", "k34"}], "-", "k54"}], ",", "k45", ",", "0"}], 
+       "}"}], ",", "\n", "\t\t", 
+      RowBox[{"{", 
+       RowBox[{"0", ",", "0", ",", "0", ",", "k54", ",", 
+        RowBox[{
+         RowBox[{"-", "k45"}], "-", "k65"}], ",", "k56"}], "}"}], ",", "\n", 
+      "\t\t", 
+      RowBox[{"{", 
+       RowBox[{"k61", ",", "0", ",", "0", ",", "0", ",", "k65", ",", 
+        RowBox[{
+         RowBox[{"-", "k16"}], "-", "k56"}]}], "}"}]}], "}"}], " ", "/.", " ", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"k65", "\[Rule]", " ", "k23"}], ",", 
+      RowBox[{"k56", "\[Rule]", " ", "k32"}], ",", 
+      RowBox[{"k61", "->", 
+       RowBox[{"cw", "*", "k21"}]}], ",", 
+      RowBox[{"k16", "\[Rule]", " ", 
+       RowBox[{"b", "*", "k12"}]}], ",", 
+      RowBox[{"k54", "\[Rule]", " ", 
+       RowBox[{"cw", "*", "k34"}]}], ",", 
+      RowBox[{"k45", "\[Rule]", " ", 
+       RowBox[{"b", "*", "k43"}]}]}], "}"}]}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.816967376189988*^9, 3.816967446659752*^9}, {
+  3.8169675426166415`*^9, 3.8169675603284736`*^9}, {3.8200233130865*^9, 
+  3.8200234076978045`*^9}, {3.820192310295909*^9, 3.8201923135719614`*^9}, {
+  3.8283713252391586`*^9, 
+  3.828371330832988*^9}},ExpressionUUID->"0ff519e3-16ab-4f24-835c-\
+ef3f1ba98163"],
+
+Cell["Convert to standard notation", "Text",
+ CellChangeTimes->{{3.828127941083513*^9, 
+  3.8281279525598564`*^9}},ExpressionUUID->"c912abb9-723b-4d8d-83f8-\
+3bbe33094841"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"RSym", " ", "=", " ", 
+  RowBox[{"RSym", "/.", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"k21", "\[Rule]", "kpi"}], ",", 
+     RowBox[{"k12", "\[Rule]", "kmi"}], ",", 
+     RowBox[{"k32", "\[Rule]", "kap"}], ",", 
+     RowBox[{"k23", "\[Rule]", "kip"}], ",", 
+     RowBox[{"k43", "\[Rule]", "kma"}], ",", 
+     RowBox[{"k34", "\[Rule]", "kpa"}], ",", 
+     RowBox[{"k41", "\[Rule]", "kam"}], ",", 
+     RowBox[{"k14", "\[Rule]", "kim"}]}], "}"}]}]}]], "Input",
+ CellChangeTimes->{{3.828127957733323*^9, 3.8281280799039955`*^9}},
+ CellLabel->"In[4]:=",ExpressionUUID->"2d0debed-1fea-4129-b170-fd13db14e930"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"-", "kam"}], "-", 
+      RowBox[{"c", " ", "kpi"}], "-", 
+      RowBox[{"cw", " ", "kpi"}]}], ",", "kmi", ",", "0", ",", "kim", ",", 
+     "0", ",", 
+     RowBox[{"b", " ", "kmi"}]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"c", " ", "kpi"}], ",", 
+     RowBox[{
+      RowBox[{"-", "kap"}], "-", "kmi"}], ",", "kip", ",", "0", ",", "0", ",",
+      "0"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0", ",", "kap", ",", 
+     RowBox[{
+      RowBox[{"-", "kip"}], "-", "kma"}], ",", 
+     RowBox[{"c", " ", "kpa"}], ",", "0", ",", "0"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"kam", ",", "0", ",", "kma", ",", 
+     RowBox[{
+      RowBox[{"-", "kim"}], "-", 
+      RowBox[{"c", " ", "kpa"}], "-", 
+      RowBox[{"cw", " ", "kpa"}]}], ",", 
+     RowBox[{"b", " ", "kma"}], ",", "0"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0", ",", "0", ",", "0", ",", 
+     RowBox[{"cw", " ", "kpa"}], ",", 
+     RowBox[{
+      RowBox[{"-", "kip"}], "-", 
+      RowBox[{"b", " ", "kma"}]}], ",", "kap"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"cw", " ", "kpi"}], ",", "0", ",", "0", ",", "0", ",", "kip", 
+     ",", 
+     RowBox[{
+      RowBox[{"-", "kap"}], "-", 
+      RowBox[{"b", " ", "kmi"}]}]}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{{3.828128080825536*^9, 3.8281280900136585`*^9}},
+ CellLabel->"Out[4]=",ExpressionUUID->"cc259b4a-a51c-4051-803d-303c47686734"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"MatrixForm", "[", "RSym", "]"}]], "Input",
+ CellChangeTimes->{{3.81696744962542*^9, 3.816967457842312*^9}},
+ CellLabel->"In[5]:=",ExpressionUUID->"f33fec86-ce44-4c71-bdfc-8b552a374fce"],
+
+Cell[BoxData[
+ TagBox[
+  RowBox[{"(", "\[NoBreak]", GridBox[{
+     {
+      RowBox[{
+       RowBox[{"-", "kam"}], "-", 
+       RowBox[{"c", " ", "kpi"}], "-", 
+       RowBox[{"cw", " ", "kpi"}]}], "kmi", "0", "kim", "0", 
+      RowBox[{"b", " ", "kmi"}]},
+     {
+      RowBox[{"c", " ", "kpi"}], 
+      RowBox[{
+       RowBox[{"-", "kap"}], "-", "kmi"}], "kip", "0", "0", "0"},
+     {"0", "kap", 
+      RowBox[{
+       RowBox[{"-", "kip"}], "-", "kma"}], 
+      RowBox[{"c", " ", "kpa"}], "0", "0"},
+     {"kam", "0", "kma", 
+      RowBox[{
+       RowBox[{"-", "kim"}], "-", 
+       RowBox[{"c", " ", "kpa"}], "-", 
+       RowBox[{"cw", " ", "kpa"}]}], 
+      RowBox[{"b", " ", "kma"}], "0"},
+     {"0", "0", "0", 
+      RowBox[{"cw", " ", "kpa"}], 
+      RowBox[{
+       RowBox[{"-", "kip"}], "-", 
+       RowBox[{"b", " ", "kma"}]}], "kap"},
+     {
+      RowBox[{"cw", " ", "kpi"}], "0", "0", "0", "kip", 
+      RowBox[{
+       RowBox[{"-", "kap"}], "-", 
+       RowBox[{"b", " ", "kmi"}]}]}
+    },
+    GridBoxAlignment->{"Columns" -> {{Center}}, "Rows" -> {{Baseline}}},
+    GridBoxSpacings->{"Columns" -> {
+        Offset[0.27999999999999997`], {
+         Offset[0.7]}, 
+        Offset[0.27999999999999997`]}, "Rows" -> {
+        Offset[0.2], {
+         Offset[0.4]}, 
+        Offset[0.2]}}], "\[NoBreak]", ")"}],
+  Function[BoxForm`e$, 
+   MatrixForm[BoxForm`e$]]]], "Output",
+ CellChangeTimes->{
+  3.816967458768404*^9, 3.8169675640646887`*^9, 3.8169684334652767`*^9, 
+   3.8195498508696156`*^9, {3.8200233887638264`*^9, 3.820023412716377*^9}, 
+   3.8200262317090893`*^9, 3.820029386481949*^9, 3.8200703591376553`*^9, 
+   3.820070710591646*^9, 3.820071904502383*^9, {3.820087266414902*^9, 
+   3.820087290752449*^9}, 3.820087441334915*^9, 3.820192147901779*^9, 
+   3.8201923179343395`*^9, 3.82024187566004*^9, {3.824917212107272*^9, 
+   3.824917225388564*^9}, 3.824993648747922*^9, 3.8281280939688787`*^9},
+ CellLabel->
+  "Out[5]//MatrixForm=",ExpressionUUID->"5a0b1692-6a93-4d45-898f-\
+87abaeff094e"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Total", "[", "RSym", "]"}]], "Input",
+ CellChangeTimes->{{3.816967462967645*^9, 3.8169674668574924`*^9}},
+ CellLabel->"In[6]:=",ExpressionUUID->"339b6cae-d290-46b9-865a-3abef351159c"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"0", ",", "0", ",", "0", ",", "0", ",", "0", ",", "0"}], 
+  "}"}]], "Output",
+ CellChangeTimes->{
+  3.8169674671542015`*^9, 3.816967566291334*^9, 3.816968433518195*^9, 
+   3.819549850929259*^9, {3.8200233888302455`*^9, 3.820023415203641*^9}, 
+   3.820026231770259*^9, 3.8200293865427847`*^9, 3.8200703592024813`*^9, 
+   3.820070710659551*^9, 3.820071904570217*^9, {3.8200872671441727`*^9, 
+   3.820087290898121*^9}, 3.820087441491988*^9, 3.820192147964138*^9, 
+   3.8201923179822116`*^9, 3.820241875749677*^9, {3.8249172121849213`*^9, 
+   3.824917225443613*^9}, 3.8249936487945986`*^9, 3.8281281003559456`*^9},
+ CellLabel->"Out[6]=",ExpressionUUID->"90cb26a3-fc83-43e5-beba-3c9c724ca97c"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"eigValues", " ", "=", " ", 
+   RowBox[{"Eigenvectors", "[", "RSym", " ", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.8169684552312403`*^9, 3.8169684558622475`*^9}},
+ CellLabel->"In[7]:=",ExpressionUUID->"ba7890a4-50da-44cc-9f83-fc85c118fbd8"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"eigVectors", " ", "=", " ", 
+   RowBox[{"Eigenvectors", "[", "RSym", " ", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{
+  3.7895828931904736`*^9, {3.7895838893159084`*^9, 3.7895838909643126`*^9}, {
+   3.790784603464886*^9, 3.790784621901783*^9}, 3.7910407181927743`*^9, {
+   3.791041829293586*^9, 3.7910418384017344`*^9}, {3.791041950940197*^9, 
+   3.7910419523067074`*^9}, 3.796939497696683*^9, 3.810579215416483*^9, {
+   3.8169676137938967`*^9, 3.8169676148478355`*^9}},
+ CellLabel->"In[8]:=",ExpressionUUID->"fbef29ad-1cd7-4503-95b2-b429d94d07f5"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"ssVec", " ", "=", 
+   RowBox[{
+    RowBox[{"eigVectors", "[", 
+     RowBox[{"[", "1", "]"}], "]"}], " ", "/", " ", 
+    RowBox[{"Total", "[", 
+     RowBox[{"eigVectors", "[", 
+      RowBox[{"[", "1", "]"}], "]"}], "]"}]}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.7895828991696534`*^9, 3.789582907509968*^9}, {
+  3.789583894558428*^9, 3.7895839033497224`*^9}, {3.8105792051332417`*^9, 
+  3.8105792351462526`*^9}, {3.816967760675254*^9, 3.816967762673696*^9}},
+ CellLabel->"In[9]:=",ExpressionUUID->"6ccc63b9-61f7-4cc3-9cd0-587cc1258cfd"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"pdRate", " ", "=", " ", 
+   RowBox[{
+    RowBox[{"ssVec", " ", "[", 
+     RowBox[{"[", "5", "]"}], "]"}], " ", "+", " ", 
+    RowBox[{"ssVec", " ", "[", 
+     RowBox[{"[", "4", "]"}], "]"}], " ", "+", " ", 
+    RowBox[{"ssVec", " ", "[", 
+     RowBox[{"[", "3", "]"}], "]"}]}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.797690670594017*^9, 3.797690691455095*^9}, {
+   3.8088545907183447`*^9, 3.8088545932226477`*^9}, 3.8088552028235254`*^9, 
+   3.8088556314875393`*^9, 3.8105791924131317`*^9, {3.8105792271548667`*^9, 
+   3.8105792351641684`*^9}, {3.816967587798273*^9, 3.816967600534112*^9}, {
+   3.8195498275443525`*^9, 3.8195498282327595`*^9}, {3.820087279564249*^9, 
+   3.8200872805622163`*^9}, {3.820192129409466*^9, 3.8201921331641283`*^9}, 
+   3.820241864625715*^9},
+ CellLabel->"In[10]:=",ExpressionUUID->"d34ce43c-8a3c-463d-9596-4606ce655f4b"],
+
+Cell[CellGroupData[{
+
+Cell["Export to Matlab", "Subsection",
+ CellChangeTimes->{{3.820025845772828*^9, 3.8200258614916983`*^9}, {
+  3.8281282225802145`*^9, 
+  3.8281282247713027`*^9}},ExpressionUUID->"7c698513-c496-4e6c-961b-\
+31ea2286cd24"],
+
+Cell[BoxData[
+ RowBox[{"<<", "ToMatlab`"}]], "Input",
+ CellLabel->"In[11]:=",ExpressionUUID->"0dfddb72-0613-4ba3-8161-c1b7601fd697"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"ssVec", " ", "//", "ToMatlab"}]], "Input",
+ CellChangeTimes->CompressedData["
+1:eJxTTMoPSmViYGCQAmIQfUTqibNp2RvHmC0rXUG0oPO5mSC6yZ5lDoieY+aW
+5gykF5z2AtOStxkqQfQzSVYwPe9VVROI7thZB6YXXOtqA9FFtlPAtMJLnh4Q
+7eYnCKbP7Jq7CKzuA+8yEJ204+JqED1TTWE9iGbwidgMFp8TBaYLT8TuAtFT
+lBLBtFxz8T4Q3c9VAaYnyd10cwHSG/69AdOyYce8QPSZKyfA9JrIS4YFQFqH
+8QqY3lJ8MBpEP7lvHQeizWOcd4Ho29fcwPT97q79IPqB1I5DIDryJtNxED3D
+nh1MTzF9fgpE5y19Daa7t0deANGs95LB9KEOrqsguslL7gaI3qa3ubIDSGsu
+2wGmr+9J3gCizc0unwDRa070201ufePoeOY4mA6SfOQPomfxfwfTAIgR05M=
+
+  "],
+ CellLabel->"In[13]:=",ExpressionUUID->"00fff5d3-03a2-455b-a464-6891b5ed9be4"],
+
+Cell[BoxData["\<\"[(-1).*cw.^(-1).*((-1).*b.*kap.^2.*kim.*kma.^2+(-2).*b.*kap.\
+*kim.* ...\\n  kip.*kma.*kmi+(-1).*b.*kap.*kim.*kma.^2.*kmi+(-1).*b.^2.*kap.* \
+...\\n  kim.*kma.^2.*kmi+(-1).*b.*kim.*kip.^2.*kmi.^2+(-1).*b.*kim.*kip.* ...\
+\\n  kma.*kmi.^2+(-1).*b.^2.*kim.*kip.*kma.*kmi.^2+(-1).*b.^2.*kim.* ...\\n  \
+kma.^2.*kmi.^2+(-1).*b.*c.*kap.*kip.*kma.*kmi.*kpa+(-1).*b.*cw.* ...\\n  \
+kap.*kip.*kma.*kmi.*kpa+(-1).*b.*c.*kip.^2.*kmi.^2.*kpa+(-1).*b.* ...\\n  \
+cw.*kip.^2.*kmi.^2.*kpa+(-1).*b.^2.*c.*kip.*kma.*kmi.^2.*kpa+(-1) ...\\n  \
+.*b.*cw.*kip.*kma.*kmi.^2.*kpa).*(kam.*kap.*kip.*kma.*kpa+kam.* ...\\n  \
+kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.*kma.*kpi+ ...\\n  \
+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.* ...\\n  \
+kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.* ...\\n  \
+kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.* ...\\n  \
+kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1).*(1+(-1).*cw.^(-1).*((-1).* ...\\n  \
+b.*kap.^2.*kim.*kma.^2+(-2).*b.*kap.*kim.*kip.*kma.*kmi+(-1).*b.* ...\\n  \
+kap.*kim.*kma.^2.*kmi+(-1).*b.^2.*kap.*kim.*kma.^2.*kmi+(-1).*b.* ...\\n  \
+kim.*kip.^2.*kmi.^2+(-1).*b.*kim.*kip.*kma.*kmi.^2+(-1).*b.^2.* ...\\n  \
+kim.*kip.*kma.*kmi.^2+(-1).*b.^2.*kim.*kma.^2.*kmi.^2+(-1).*b.*c.* ...\\n  \
+kap.*kip.*kma.*kmi.*kpa+(-1).*b.*cw.*kap.*kip.*kma.*kmi.*kpa+(-1) ...\\n  \
+.*b.*c.*kip.^2.*kmi.^2.*kpa+(-1).*b.*cw.*kip.^2.*kmi.^2.*kpa+(-1) ...\\n  \
+.*b.^2.*c.*kip.*kma.*kmi.^2.*kpa+(-1).*b.*cw.*kip.*kma.*kmi.^2.* ...\\n  \
+kpa).*(kam.*kap.*kip.*kma.*kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.* ...\\n  \
+kma.*kmi.*kpa+kap.*kim.*kip.*kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+ ...\\n  \
+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.*kmi.*kpi+b.*kim.*kip.*kma.* ...\\n  \
+kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.*kap.*kip.*kma.*kpa.*kpi+cw.* ...\\n  \
+kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.*kmi.*kpa.*kpi+cw.*kip.^2.*kmi.* ...\\n  \
+kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.*kpi+cw.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi).^(-1)+(-1).*cw.^(-1).*((-1).*b.*kam.*kap.^2.*kma.^2+(-2).*b.* ...\\n  \
+kam.*kap.*kip.*kma.*kmi+(-1).*b.*kam.*kap.*kma.^2.*kmi+(-1).* ...\\n  \
+b.^2.*kam.*kap.*kma.^2.*kmi+(-1).*b.*kam.*kip.^2.*kmi.^2+(-1).*b.* ...\\n  \
+kam.*kip.*kma.*kmi.^2+(-1).*b.^2.*kam.*kip.*kma.*kmi.^2+(-1).* ...\\n  \
+b.^2.*kam.*kma.^2.*kmi.^2+(-1).*b.*c.*kap.^2.*kma.^2.*kpi+(-1).* ...\\n  \
+b.*cw.*kap.^2.*kma.^2.*kpi+(-1).*b.*c.*kap.*kip.*kma.*kmi.*kpi+( ...\\n  \
+-1).*b.*cw.*kap.*kip.*kma.*kmi.*kpi+(-1).*b.^2.*c.*kap.*kma.^2.* ...\\n  \
+kmi.*kpi+(-1).*b.*cw.*kap.*kma.^2.*kmi.*kpi).*(kam.*kap.*kip.* ...\\n  \
+kma.*kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.* ...\\n  \
+kip.*kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.* ...\\n  \
+kip.*kma.*kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.* ...\\n  \
+kmi.*kpi+c.*kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+ ...\\n  \
+c.*kip.^2.*kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.* ...\\n  \
+kma.*kmi.*kpa.*kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1)+(-1).*((-1) ...\\n  \
+.*kam.*kap.^2.*kma.*kpa+(-1).*kam.*kap.*kip.*kmi.*kpa+(-1).*kam.* ...\\n  \
+kap.*kma.*kmi.*kpa+(-1).*b.*kam.*kap.*kma.*kmi.*kpa+(-1).*b.*kam.* ...\\n  \
+kip.*kmi.^2.*kpa+(-1).*b.*kam.*kma.*kmi.^2.*kpa+(-1).*kap.^2.* ...\\n  \
+kim.*kma.*kpi+(-1).*kap.*kim.*kip.*kmi.*kpi+(-1).*kap.*kim.*kma.* ...\\n  \
+kmi.*kpi+(-1).*c.*kap.^2.*kma.*kpa.*kpi+(-1).*cw.*kap.^2.*kma.* ...\\n  \
+kpa.*kpi+(-1).*c.*kap.*kip.*kmi.*kpa.*kpi+(-1).*cw.*kap.*kip.* ...\\n  \
+kmi.*kpa.*kpi+(-1).*b.*c.*kap.*kma.*kmi.*kpa.*kpi+(-1).*cw.*kap.* ...\\n  \
+kma.*kmi.*kpa.*kpi).*(kam.*kap.*kip.*kma.*kpa+kam.*kip.^2.*kmi.* ...\\n  \
+kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.*kma.*kpi+b.*kap.*kim.* ...\\n  \
+kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.*kmi.*kpi+b.*kim.* ...\\n  \
+kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.*kap.*kip.*kma.* ...\\n  \
+kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.*kmi.*kpa.*kpi+cw.* ...\\n  \
+kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.*kpi+cw.*kip.*kma.* ...\\n  \
+kmi.*kpa.*kpi).^(-1)+(-1).*cw.^(-1).*((-1).*b.*c.*kam.*kap.^2.* ...\\n  \
+kma.*kpa+(-1).*b.*c.*kam.*kap.*kip.*kmi.*kpa+(-1).*b.*c.*kam.* ...\\n  \
+kap.*kma.*kmi.*kpa+(-1).*b.^2.*c.*kam.*kap.*kma.*kmi.*kpa+(-1).* ...\\n  \
+b.*c.*kam.*kip.*kmi.^2.*kpa+(-1).*b.^2.*c.*kam.*kma.*kmi.^2.*kpa+( ...\\n  \
+-1).*b.*c.*kap.^2.*kim.*kma.*kpi+(-1).*b.*c.*kap.*kim.*kip.*kmi.* ...\\n  \
+kpi+(-1).*b.^2.*c.*kap.*kim.*kma.*kmi.*kpi+(-1).*b.*c.^2.*kap.^2.* ...\\n  \
+kma.*kpa.*kpi+(-1).*b.*c.*cw.*kap.^2.*kma.*kpa.*kpi+(-1).*b.* ...\\n  \
+c.^2.*kap.*kip.*kmi.*kpa.*kpi+(-1).*b.*c.*cw.*kap.*kip.*kmi.*kpa.* ...\\n  \
+kpi+(-1).*b.^2.*c.^2.*kap.*kma.*kmi.*kpa.*kpi+(-1).*b.*c.*cw.* ...\\n  \
+kap.*kma.*kmi.*kpa.*kpi).*(kam.*kap.*kip.*kma.*kpa+kam.*kip.^2.* ...\\n  \
+kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.*kma.*kpi+b.*kap.* ...\\n  \
+kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.*kmi.*kpi+b.* ...\\n  \
+kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.*kap.*kip.* ...\\n  \
+kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.*kmi.*kpa.* ...\\n  \
+kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.*kpi+cw.* ...\\n  \
+kip.*kma.*kmi.*kpa.*kpi).^(-1)+(-1).*cw.^(-1).*(kam.*kap.*kip.* ...\\n  \
+kma.*kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.* ...\\n  \
+kip.*kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.* ...\\n  \
+kip.*kma.*kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.* ...\\n  \
+kmi.*kpi+c.*kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+ ...\\n  \
+c.*kip.^2.*kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.* ...\\n  \
+kma.*kmi.*kpa.*kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1).*((-1).*b.* ...\\n  \
+c.*kam.*kap.*kip.*kma.*kpa+(-1).*b.*c.*kam.*kip.^2.*kmi.*kpa+(-1) ...\\n  \
+.*b.^2.*c.*kam.*kip.*kma.*kmi.*kpa+(-1).*b.*c.*kap.*kim.*kip.* ...\\n  \
+kma.*kpi+(-1).*b.*c.*kap.*kim.*kma.^2.*kpi+(-1).*b.*c.*kim.* ...\\n  \
+kip.^2.*kmi.*kpi+(-1).*b.*c.*kim.*kip.*kma.*kmi.*kpi+(-1).*b.^2.* ...\\n  \
+c.*kim.*kip.*kma.*kmi.*kpi+(-1).*b.^2.*c.*kim.*kma.^2.*kmi.*kpi+( ...\\n  \
+-1).*b.*c.^2.*kap.*kip.*kma.*kpa.*kpi+(-1).*b.*c.*cw.*kap.*kip.* ...\\n  \
+kma.*kpa.*kpi+(-1).*b.*c.^2.*kip.^2.*kmi.*kpa.*kpi+(-1).*b.*c.* ...\\n  \
+cw.*kip.^2.*kmi.*kpa.*kpi+(-1).*b.^2.*c.^2.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+(-1).*b.*c.*cw.*kip.*kma.*kmi.*kpa.*kpi)).^(-1),(-1).*cw.^(-1) ...\\n  \
+.*(kam.*kap.*kip.*kma.*kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.* ...\\n  \
+kmi.*kpa+kap.*kim.*kip.*kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+kim.* ...\\n  \
+kip.^2.*kmi.*kpi+kim.*kip.*kma.*kmi.*kpi+b.*kim.*kip.*kma.*kmi.* ...\\n  \
+kpi+b.*kim.*kma.^2.*kmi.*kpi+c.*kap.*kip.*kma.*kpa.*kpi+cw.*kap.* ...\\n  \
+kip.*kma.*kpa.*kpi+c.*kip.^2.*kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.* ...\\n  \
+kpi+b.*c.*kip.*kma.*kmi.*kpa.*kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^( ...\\n  \
+-1).*((-1).*b.*c.*kam.*kap.*kip.*kma.*kpa+(-1).*b.*c.*kam.* ...\\n  \
+kip.^2.*kmi.*kpa+(-1).*b.^2.*c.*kam.*kip.*kma.*kmi.*kpa+(-1).*b.* ...\\n  \
+c.*kap.*kim.*kip.*kma.*kpi+(-1).*b.*c.*kap.*kim.*kma.^2.*kpi+(-1) ...\\n  \
+.*b.*c.*kim.*kip.^2.*kmi.*kpi+(-1).*b.*c.*kim.*kip.*kma.*kmi.*kpi+ ...\\n  \
+(-1).*b.^2.*c.*kim.*kip.*kma.*kmi.*kpi+(-1).*b.^2.*c.*kim.* ...\\n  \
+kma.^2.*kmi.*kpi+(-1).*b.*c.^2.*kap.*kip.*kma.*kpa.*kpi+(-1).*b.* ...\\n  \
+c.*cw.*kap.*kip.*kma.*kpa.*kpi+(-1).*b.*c.^2.*kip.^2.*kmi.*kpa.* ...\\n  \
+kpi+(-1).*b.*c.*cw.*kip.^2.*kmi.*kpa.*kpi+(-1).*b.^2.*c.^2.*kip.* ...\\n  \
+kma.*kmi.*kpa.*kpi+(-1).*b.*c.*cw.*kip.*kma.*kmi.*kpa.*kpi).*(1+( ...\\n  \
+-1).*cw.^(-1).*((-1).*b.*kap.^2.*kim.*kma.^2+(-2).*b.*kap.*kim.* ...\\n  \
+kip.*kma.*kmi+(-1).*b.*kap.*kim.*kma.^2.*kmi+(-1).*b.^2.*kap.* ...\\n  \
+kim.*kma.^2.*kmi+(-1).*b.*kim.*kip.^2.*kmi.^2+(-1).*b.*kim.*kip.* ...\\n  \
+kma.*kmi.^2+(-1).*b.^2.*kim.*kip.*kma.*kmi.^2+(-1).*b.^2.*kim.* ...\\n  \
+kma.^2.*kmi.^2+(-1).*b.*c.*kap.*kip.*kma.*kmi.*kpa+(-1).*b.*cw.* ...\\n  \
+kap.*kip.*kma.*kmi.*kpa+(-1).*b.*c.*kip.^2.*kmi.^2.*kpa+(-1).*b.* ...\\n  \
+cw.*kip.^2.*kmi.^2.*kpa+(-1).*b.^2.*c.*kip.*kma.*kmi.^2.*kpa+(-1) ...\\n  \
+.*b.*cw.*kip.*kma.*kmi.^2.*kpa).*(kam.*kap.*kip.*kma.*kpa+kam.* ...\\n  \
+kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.*kma.*kpi+ ...\\n  \
+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.* ...\\n  \
+kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.* ...\\n  \
+kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.* ...\\n  \
+kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1)+(-1).*cw.^(-1).*((-1).*b.* ...\\n  \
+kam.*kap.^2.*kma.^2+(-2).*b.*kam.*kap.*kip.*kma.*kmi+(-1).*b.* ...\\n  \
+kam.*kap.*kma.^2.*kmi+(-1).*b.^2.*kam.*kap.*kma.^2.*kmi+(-1).*b.* ...\\n  \
+kam.*kip.^2.*kmi.^2+(-1).*b.*kam.*kip.*kma.*kmi.^2+(-1).*b.^2.* ...\\n  \
+kam.*kip.*kma.*kmi.^2+(-1).*b.^2.*kam.*kma.^2.*kmi.^2+(-1).*b.*c.* ...\\n  \
+kap.^2.*kma.^2.*kpi+(-1).*b.*cw.*kap.^2.*kma.^2.*kpi+(-1).*b.*c.* ...\\n  \
+kap.*kip.*kma.*kmi.*kpi+(-1).*b.*cw.*kap.*kip.*kma.*kmi.*kpi+(-1) ...\\n  \
+.*b.^2.*c.*kap.*kma.^2.*kmi.*kpi+(-1).*b.*cw.*kap.*kma.^2.*kmi.* ...\\n  \
+kpi).*(kam.*kap.*kip.*kma.*kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.* ...\\n  \
+kma.*kmi.*kpa+kap.*kim.*kip.*kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+ ...\\n  \
+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.*kmi.*kpi+b.*kim.*kip.*kma.* ...\\n  \
+kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.*kap.*kip.*kma.*kpa.*kpi+cw.* ...\\n  \
+kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.*kmi.*kpa.*kpi+cw.*kip.^2.*kmi.* ...\\n  \
+kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.*kpi+cw.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi).^(-1)+(-1).*((-1).*kam.*kap.^2.*kma.*kpa+(-1).*kam.*kap.* ...\\n  \
+kip.*kmi.*kpa+(-1).*kam.*kap.*kma.*kmi.*kpa+(-1).*b.*kam.*kap.* ...\\n  \
+kma.*kmi.*kpa+(-1).*b.*kam.*kip.*kmi.^2.*kpa+(-1).*b.*kam.*kma.* ...\\n  \
+kmi.^2.*kpa+(-1).*kap.^2.*kim.*kma.*kpi+(-1).*kap.*kim.*kip.*kmi.* ...\\n  \
+kpi+(-1).*kap.*kim.*kma.*kmi.*kpi+(-1).*c.*kap.^2.*kma.*kpa.*kpi+( ...\\n  \
+-1).*cw.*kap.^2.*kma.*kpa.*kpi+(-1).*c.*kap.*kip.*kmi.*kpa.*kpi+( ...\\n  \
+-1).*cw.*kap.*kip.*kmi.*kpa.*kpi+(-1).*b.*c.*kap.*kma.*kmi.*kpa.* ...\\n  \
+kpi+(-1).*cw.*kap.*kma.*kmi.*kpa.*kpi).*(kam.*kap.*kip.*kma.*kpa+ ...\\n  \
+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.*kma.* ...\\n  \
+kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.* ...\\n  \
+kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.* ...\\n  \
+kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.* ...\\n  \
+kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1)+(-1).*cw.^(-1).*((-1).*b.* ...\\n  \
+c.*kam.*kap.^2.*kma.*kpa+(-1).*b.*c.*kam.*kap.*kip.*kmi.*kpa+(-1) ...\\n  \
+.*b.*c.*kam.*kap.*kma.*kmi.*kpa+(-1).*b.^2.*c.*kam.*kap.*kma.* ...\\n  \
+kmi.*kpa+(-1).*b.*c.*kam.*kip.*kmi.^2.*kpa+(-1).*b.^2.*c.*kam.* ...\\n  \
+kma.*kmi.^2.*kpa+(-1).*b.*c.*kap.^2.*kim.*kma.*kpi+(-1).*b.*c.* ...\\n  \
+kap.*kim.*kip.*kmi.*kpi+(-1).*b.^2.*c.*kap.*kim.*kma.*kmi.*kpi+( ...\\n  \
+-1).*b.*c.^2.*kap.^2.*kma.*kpa.*kpi+(-1).*b.*c.*cw.*kap.^2.*kma.* ...\\n  \
+kpa.*kpi+(-1).*b.*c.^2.*kap.*kip.*kmi.*kpa.*kpi+(-1).*b.*c.*cw.* ...\\n  \
+kap.*kip.*kmi.*kpa.*kpi+(-1).*b.^2.*c.^2.*kap.*kma.*kmi.*kpa.*kpi+ ...\\n  \
+(-1).*b.*c.*cw.*kap.*kma.*kmi.*kpa.*kpi).*(kam.*kap.*kip.*kma.* ...\\n  \
+kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.* ...\\n  \
+kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.* ...\\n  \
+kma.*kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+ ...\\n  \
+c.*kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.* ...\\n  \
+kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1)+(-1).*cw.^(-1).*(kam.*kap.* ...\\n  \
+kip.*kma.*kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.* ...\\n  \
+kim.*kip.*kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+ ...\\n  \
+kim.*kip.*kma.*kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.* ...\\n  \
+kma.^2.*kmi.*kpi+c.*kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.* ...\\n  \
+kpa.*kpi+c.*kip.^2.*kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.* ...\\n  \
+kip.*kma.*kmi.*kpa.*kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1).*((-1) ...\\n  \
+.*b.*c.*kam.*kap.*kip.*kma.*kpa+(-1).*b.*c.*kam.*kip.^2.*kmi.*kpa+ ...\\n  \
+(-1).*b.^2.*c.*kam.*kip.*kma.*kmi.*kpa+(-1).*b.*c.*kap.*kim.*kip.* ...\\n  \
+kma.*kpi+(-1).*b.*c.*kap.*kim.*kma.^2.*kpi+(-1).*b.*c.*kim.* ...\\n  \
+kip.^2.*kmi.*kpi+(-1).*b.*c.*kim.*kip.*kma.*kmi.*kpi+(-1).*b.^2.* ...\\n  \
+c.*kim.*kip.*kma.*kmi.*kpi+(-1).*b.^2.*c.*kim.*kma.^2.*kmi.*kpi+( ...\\n  \
+-1).*b.*c.^2.*kap.*kip.*kma.*kpa.*kpi+(-1).*b.*c.*cw.*kap.*kip.* ...\\n  \
+kma.*kpa.*kpi+(-1).*b.*c.^2.*kip.^2.*kmi.*kpa.*kpi+(-1).*b.*c.* ...\\n  \
+cw.*kip.^2.*kmi.*kpa.*kpi+(-1).*b.^2.*c.^2.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+(-1).*b.*c.*cw.*kip.*kma.*kmi.*kpa.*kpi)).^(-1),(-1).*cw.^(-1) ...\\n  \
+.*((-1).*b.*c.*kam.*kap.^2.*kma.*kpa+(-1).*b.*c.*kam.*kap.*kip.* ...\\n  \
+kmi.*kpa+(-1).*b.*c.*kam.*kap.*kma.*kmi.*kpa+(-1).*b.^2.*c.*kam.* ...\\n  \
+kap.*kma.*kmi.*kpa+(-1).*b.*c.*kam.*kip.*kmi.^2.*kpa+(-1).*b.^2.* ...\\n  \
+c.*kam.*kma.*kmi.^2.*kpa+(-1).*b.*c.*kap.^2.*kim.*kma.*kpi+(-1).* ...\\n  \
+b.*c.*kap.*kim.*kip.*kmi.*kpi+(-1).*b.^2.*c.*kap.*kim.*kma.*kmi.* ...\\n  \
+kpi+(-1).*b.*c.^2.*kap.^2.*kma.*kpa.*kpi+(-1).*b.*c.*cw.*kap.^2.* ...\\n  \
+kma.*kpa.*kpi+(-1).*b.*c.^2.*kap.*kip.*kmi.*kpa.*kpi+(-1).*b.*c.* ...\\n  \
+cw.*kap.*kip.*kmi.*kpa.*kpi+(-1).*b.^2.*c.^2.*kap.*kma.*kmi.*kpa.* ...\\n  \
+kpi+(-1).*b.*c.*cw.*kap.*kma.*kmi.*kpa.*kpi).*(kam.*kap.*kip.* ...\\n  \
+kma.*kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.* ...\\n  \
+kip.*kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.* ...\\n  \
+kip.*kma.*kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.* ...\\n  \
+kmi.*kpi+c.*kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+ ...\\n  \
+c.*kip.^2.*kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.* ...\\n  \
+kma.*kmi.*kpa.*kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1).*(1+(-1).* ...\\n  \
+cw.^(-1).*((-1).*b.*kap.^2.*kim.*kma.^2+(-2).*b.*kap.*kim.*kip.* ...\\n  \
+kma.*kmi+(-1).*b.*kap.*kim.*kma.^2.*kmi+(-1).*b.^2.*kap.*kim.* ...\\n  \
+kma.^2.*kmi+(-1).*b.*kim.*kip.^2.*kmi.^2+(-1).*b.*kim.*kip.*kma.* ...\\n  \
+kmi.^2+(-1).*b.^2.*kim.*kip.*kma.*kmi.^2+(-1).*b.^2.*kim.*kma.^2.* ...\\n  \
+kmi.^2+(-1).*b.*c.*kap.*kip.*kma.*kmi.*kpa+(-1).*b.*cw.*kap.*kip.* ...\\n  \
+kma.*kmi.*kpa+(-1).*b.*c.*kip.^2.*kmi.^2.*kpa+(-1).*b.*cw.* ...\\n  \
+kip.^2.*kmi.^2.*kpa+(-1).*b.^2.*c.*kip.*kma.*kmi.^2.*kpa+(-1).*b.* ...\\n  \
+cw.*kip.*kma.*kmi.^2.*kpa).*(kam.*kap.*kip.*kma.*kpa+kam.*kip.^2.* ...\\n  \
+kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.*kma.*kpi+b.*kap.* ...\\n  \
+kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.*kmi.*kpi+b.* ...\\n  \
+kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.*kap.*kip.* ...\\n  \
+kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.*kmi.*kpa.* ...\\n  \
+kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.*kpi+cw.* ...\\n  \
+kip.*kma.*kmi.*kpa.*kpi).^(-1)+(-1).*cw.^(-1).*((-1).*b.*kam.* ...\\n  \
+kap.^2.*kma.^2+(-2).*b.*kam.*kap.*kip.*kma.*kmi+(-1).*b.*kam.* ...\\n  \
+kap.*kma.^2.*kmi+(-1).*b.^2.*kam.*kap.*kma.^2.*kmi+(-1).*b.*kam.* ...\\n  \
+kip.^2.*kmi.^2+(-1).*b.*kam.*kip.*kma.*kmi.^2+(-1).*b.^2.*kam.* ...\\n  \
+kip.*kma.*kmi.^2+(-1).*b.^2.*kam.*kma.^2.*kmi.^2+(-1).*b.*c.* ...\\n  \
+kap.^2.*kma.^2.*kpi+(-1).*b.*cw.*kap.^2.*kma.^2.*kpi+(-1).*b.*c.* ...\\n  \
+kap.*kip.*kma.*kmi.*kpi+(-1).*b.*cw.*kap.*kip.*kma.*kmi.*kpi+(-1) ...\\n  \
+.*b.^2.*c.*kap.*kma.^2.*kmi.*kpi+(-1).*b.*cw.*kap.*kma.^2.*kmi.* ...\\n  \
+kpi).*(kam.*kap.*kip.*kma.*kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.* ...\\n  \
+kma.*kmi.*kpa+kap.*kim.*kip.*kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+ ...\\n  \
+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.*kmi.*kpi+b.*kim.*kip.*kma.* ...\\n  \
+kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.*kap.*kip.*kma.*kpa.*kpi+cw.* ...\\n  \
+kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.*kmi.*kpa.*kpi+cw.*kip.^2.*kmi.* ...\\n  \
+kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.*kpi+cw.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi).^(-1)+(-1).*((-1).*kam.*kap.^2.*kma.*kpa+(-1).*kam.*kap.* ...\\n  \
+kip.*kmi.*kpa+(-1).*kam.*kap.*kma.*kmi.*kpa+(-1).*b.*kam.*kap.* ...\\n  \
+kma.*kmi.*kpa+(-1).*b.*kam.*kip.*kmi.^2.*kpa+(-1).*b.*kam.*kma.* ...\\n  \
+kmi.^2.*kpa+(-1).*kap.^2.*kim.*kma.*kpi+(-1).*kap.*kim.*kip.*kmi.* ...\\n  \
+kpi+(-1).*kap.*kim.*kma.*kmi.*kpi+(-1).*c.*kap.^2.*kma.*kpa.*kpi+( ...\\n  \
+-1).*cw.*kap.^2.*kma.*kpa.*kpi+(-1).*c.*kap.*kip.*kmi.*kpa.*kpi+( ...\\n  \
+-1).*cw.*kap.*kip.*kmi.*kpa.*kpi+(-1).*b.*c.*kap.*kma.*kmi.*kpa.* ...\\n  \
+kpi+(-1).*cw.*kap.*kma.*kmi.*kpa.*kpi).*(kam.*kap.*kip.*kma.*kpa+ ...\\n  \
+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.*kma.* ...\\n  \
+kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.* ...\\n  \
+kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.* ...\\n  \
+kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.* ...\\n  \
+kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1)+(-1).*cw.^(-1).*((-1).*b.* ...\\n  \
+c.*kam.*kap.^2.*kma.*kpa+(-1).*b.*c.*kam.*kap.*kip.*kmi.*kpa+(-1) ...\\n  \
+.*b.*c.*kam.*kap.*kma.*kmi.*kpa+(-1).*b.^2.*c.*kam.*kap.*kma.* ...\\n  \
+kmi.*kpa+(-1).*b.*c.*kam.*kip.*kmi.^2.*kpa+(-1).*b.^2.*c.*kam.* ...\\n  \
+kma.*kmi.^2.*kpa+(-1).*b.*c.*kap.^2.*kim.*kma.*kpi+(-1).*b.*c.* ...\\n  \
+kap.*kim.*kip.*kmi.*kpi+(-1).*b.^2.*c.*kap.*kim.*kma.*kmi.*kpi+( ...\\n  \
+-1).*b.*c.^2.*kap.^2.*kma.*kpa.*kpi+(-1).*b.*c.*cw.*kap.^2.*kma.* ...\\n  \
+kpa.*kpi+(-1).*b.*c.^2.*kap.*kip.*kmi.*kpa.*kpi+(-1).*b.*c.*cw.* ...\\n  \
+kap.*kip.*kmi.*kpa.*kpi+(-1).*b.^2.*c.^2.*kap.*kma.*kmi.*kpa.*kpi+ ...\\n  \
+(-1).*b.*c.*cw.*kap.*kma.*kmi.*kpa.*kpi).*(kam.*kap.*kip.*kma.* ...\\n  \
+kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.* ...\\n  \
+kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.* ...\\n  \
+kma.*kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+ ...\\n  \
+c.*kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.* ...\\n  \
+kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1)+(-1).*cw.^(-1).*(kam.*kap.* ...\\n  \
+kip.*kma.*kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.* ...\\n  \
+kim.*kip.*kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+ ...\\n  \
+kim.*kip.*kma.*kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.* ...\\n  \
+kma.^2.*kmi.*kpi+c.*kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.* ...\\n  \
+kpa.*kpi+c.*kip.^2.*kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.* ...\\n  \
+kip.*kma.*kmi.*kpa.*kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1).*((-1) ...\\n  \
+.*b.*c.*kam.*kap.*kip.*kma.*kpa+(-1).*b.*c.*kam.*kip.^2.*kmi.*kpa+ ...\\n  \
+(-1).*b.^2.*c.*kam.*kip.*kma.*kmi.*kpa+(-1).*b.*c.*kap.*kim.*kip.* ...\\n  \
+kma.*kpi+(-1).*b.*c.*kap.*kim.*kma.^2.*kpi+(-1).*b.*c.*kim.* ...\\n  \
+kip.^2.*kmi.*kpi+(-1).*b.*c.*kim.*kip.*kma.*kmi.*kpi+(-1).*b.^2.* ...\\n  \
+c.*kim.*kip.*kma.*kmi.*kpi+(-1).*b.^2.*c.*kim.*kma.^2.*kmi.*kpi+( ...\\n  \
+-1).*b.*c.^2.*kap.*kip.*kma.*kpa.*kpi+(-1).*b.*c.*cw.*kap.*kip.* ...\\n  \
+kma.*kpa.*kpi+(-1).*b.*c.^2.*kip.^2.*kmi.*kpa.*kpi+(-1).*b.*c.* ...\\n  \
+cw.*kip.^2.*kmi.*kpa.*kpi+(-1).*b.^2.*c.^2.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+(-1).*b.*c.*cw.*kip.*kma.*kmi.*kpa.*kpi)).^(-1),(-1).*cw.^(-1) ...\\n  \
+.*((-1).*b.*kam.*kap.^2.*kma.^2+(-2).*b.*kam.*kap.*kip.*kma.*kmi+( ...\\n  \
+-1).*b.*kam.*kap.*kma.^2.*kmi+(-1).*b.^2.*kam.*kap.*kma.^2.*kmi+( ...\\n  \
+-1).*b.*kam.*kip.^2.*kmi.^2+(-1).*b.*kam.*kip.*kma.*kmi.^2+(-1).* ...\\n  \
+b.^2.*kam.*kip.*kma.*kmi.^2+(-1).*b.^2.*kam.*kma.^2.*kmi.^2+(-1).* ...\\n  \
+b.*c.*kap.^2.*kma.^2.*kpi+(-1).*b.*cw.*kap.^2.*kma.^2.*kpi+(-1).* ...\\n  \
+b.*c.*kap.*kip.*kma.*kmi.*kpi+(-1).*b.*cw.*kap.*kip.*kma.*kmi.* ...\\n  \
+kpi+(-1).*b.^2.*c.*kap.*kma.^2.*kmi.*kpi+(-1).*b.*cw.*kap.* ...\\n  \
+kma.^2.*kmi.*kpi).*(kam.*kap.*kip.*kma.*kpa+kam.*kip.^2.*kmi.*kpa+ ...\\n  \
+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.*kma.*kpi+b.*kap.*kim.* ...\\n  \
+kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.*kmi.*kpi+b.*kim.* ...\\n  \
+kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.*kap.*kip.*kma.* ...\\n  \
+kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.*kmi.*kpa.*kpi+cw.* ...\\n  \
+kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.*kpi+cw.*kip.*kma.* ...\\n  \
+kmi.*kpa.*kpi).^(-1).*(1+(-1).*cw.^(-1).*((-1).*b.*kap.^2.*kim.* ...\\n  \
+kma.^2+(-2).*b.*kap.*kim.*kip.*kma.*kmi+(-1).*b.*kap.*kim.* ...\\n  \
+kma.^2.*kmi+(-1).*b.^2.*kap.*kim.*kma.^2.*kmi+(-1).*b.*kim.* ...\\n  \
+kip.^2.*kmi.^2+(-1).*b.*kim.*kip.*kma.*kmi.^2+(-1).*b.^2.*kim.* ...\\n  \
+kip.*kma.*kmi.^2+(-1).*b.^2.*kim.*kma.^2.*kmi.^2+(-1).*b.*c.*kap.* ...\\n  \
+kip.*kma.*kmi.*kpa+(-1).*b.*cw.*kap.*kip.*kma.*kmi.*kpa+(-1).*b.* ...\\n  \
+c.*kip.^2.*kmi.^2.*kpa+(-1).*b.*cw.*kip.^2.*kmi.^2.*kpa+(-1).* ...\\n  \
+b.^2.*c.*kip.*kma.*kmi.^2.*kpa+(-1).*b.*cw.*kip.*kma.*kmi.^2.*kpa) ...\\n  \
+.*(kam.*kap.*kip.*kma.*kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.* ...\\n  \
+kmi.*kpa+kap.*kim.*kip.*kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+kim.* ...\\n  \
+kip.^2.*kmi.*kpi+kim.*kip.*kma.*kmi.*kpi+b.*kim.*kip.*kma.*kmi.* ...\\n  \
+kpi+b.*kim.*kma.^2.*kmi.*kpi+c.*kap.*kip.*kma.*kpa.*kpi+cw.*kap.* ...\\n  \
+kip.*kma.*kpa.*kpi+c.*kip.^2.*kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.* ...\\n  \
+kpi+b.*c.*kip.*kma.*kmi.*kpa.*kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^( ...\\n  \
+-1)+(-1).*cw.^(-1).*((-1).*b.*kam.*kap.^2.*kma.^2+(-2).*b.*kam.* ...\\n  \
+kap.*kip.*kma.*kmi+(-1).*b.*kam.*kap.*kma.^2.*kmi+(-1).*b.^2.* ...\\n  \
+kam.*kap.*kma.^2.*kmi+(-1).*b.*kam.*kip.^2.*kmi.^2+(-1).*b.*kam.* ...\\n  \
+kip.*kma.*kmi.^2+(-1).*b.^2.*kam.*kip.*kma.*kmi.^2+(-1).*b.^2.* ...\\n  \
+kam.*kma.^2.*kmi.^2+(-1).*b.*c.*kap.^2.*kma.^2.*kpi+(-1).*b.*cw.* ...\\n  \
+kap.^2.*kma.^2.*kpi+(-1).*b.*c.*kap.*kip.*kma.*kmi.*kpi+(-1).*b.* ...\\n  \
+cw.*kap.*kip.*kma.*kmi.*kpi+(-1).*b.^2.*c.*kap.*kma.^2.*kmi.*kpi+( ...\\n  \
+-1).*b.*cw.*kap.*kma.^2.*kmi.*kpi).*(kam.*kap.*kip.*kma.*kpa+kam.* ...\\n  \
+kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.*kma.*kpi+ ...\\n  \
+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.* ...\\n  \
+kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.* ...\\n  \
+kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.* ...\\n  \
+kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1)+(-1).*((-1).*kam.*kap.^2.* ...\\n  \
+kma.*kpa+(-1).*kam.*kap.*kip.*kmi.*kpa+(-1).*kam.*kap.*kma.*kmi.* ...\\n  \
+kpa+(-1).*b.*kam.*kap.*kma.*kmi.*kpa+(-1).*b.*kam.*kip.*kmi.^2.* ...\\n  \
+kpa+(-1).*b.*kam.*kma.*kmi.^2.*kpa+(-1).*kap.^2.*kim.*kma.*kpi+( ...\\n  \
+-1).*kap.*kim.*kip.*kmi.*kpi+(-1).*kap.*kim.*kma.*kmi.*kpi+(-1).* ...\\n  \
+c.*kap.^2.*kma.*kpa.*kpi+(-1).*cw.*kap.^2.*kma.*kpa.*kpi+(-1).*c.* ...\\n  \
+kap.*kip.*kmi.*kpa.*kpi+(-1).*cw.*kap.*kip.*kmi.*kpa.*kpi+(-1).* ...\\n  \
+b.*c.*kap.*kma.*kmi.*kpa.*kpi+(-1).*cw.*kap.*kma.*kmi.*kpa.*kpi).* ...\\n  \
+(kam.*kap.*kip.*kma.*kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.* ...\\n  \
+kmi.*kpa+kap.*kim.*kip.*kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+kim.* ...\\n  \
+kip.^2.*kmi.*kpi+kim.*kip.*kma.*kmi.*kpi+b.*kim.*kip.*kma.*kmi.* ...\\n  \
+kpi+b.*kim.*kma.^2.*kmi.*kpi+c.*kap.*kip.*kma.*kpa.*kpi+cw.*kap.* ...\\n  \
+kip.*kma.*kpa.*kpi+c.*kip.^2.*kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.* ...\\n  \
+kpi+b.*c.*kip.*kma.*kmi.*kpa.*kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^( ...\\n  \
+-1)+(-1).*cw.^(-1).*((-1).*b.*c.*kam.*kap.^2.*kma.*kpa+(-1).*b.* ...\\n  \
+c.*kam.*kap.*kip.*kmi.*kpa+(-1).*b.*c.*kam.*kap.*kma.*kmi.*kpa+( ...\\n  \
+-1).*b.^2.*c.*kam.*kap.*kma.*kmi.*kpa+(-1).*b.*c.*kam.*kip.* ...\\n  \
+kmi.^2.*kpa+(-1).*b.^2.*c.*kam.*kma.*kmi.^2.*kpa+(-1).*b.*c.* ...\\n  \
+kap.^2.*kim.*kma.*kpi+(-1).*b.*c.*kap.*kim.*kip.*kmi.*kpi+(-1).* ...\\n  \
+b.^2.*c.*kap.*kim.*kma.*kmi.*kpi+(-1).*b.*c.^2.*kap.^2.*kma.*kpa.* ...\\n  \
+kpi+(-1).*b.*c.*cw.*kap.^2.*kma.*kpa.*kpi+(-1).*b.*c.^2.*kap.* ...\\n  \
+kip.*kmi.*kpa.*kpi+(-1).*b.*c.*cw.*kap.*kip.*kmi.*kpa.*kpi+(-1).* ...\\n  \
+b.^2.*c.^2.*kap.*kma.*kmi.*kpa.*kpi+(-1).*b.*c.*cw.*kap.*kma.* ...\\n  \
+kmi.*kpa.*kpi).*(kam.*kap.*kip.*kma.*kpa+kam.*kip.^2.*kmi.*kpa+ ...\\n  \
+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.*kma.*kpi+b.*kap.*kim.* ...\\n  \
+kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.*kmi.*kpi+b.*kim.* ...\\n  \
+kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.*kap.*kip.*kma.* ...\\n  \
+kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.*kmi.*kpa.*kpi+cw.* ...\\n  \
+kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.*kpi+cw.*kip.*kma.* ...\\n  \
+kmi.*kpa.*kpi).^(-1)+(-1).*cw.^(-1).*(kam.*kap.*kip.*kma.*kpa+ ...\\n  \
+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.*kma.* ...\\n  \
+kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.* ...\\n  \
+kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.* ...\\n  \
+kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.* ...\\n  \
+kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1).*((-1).*b.*c.*kam.*kap.* ...\\n  \
+kip.*kma.*kpa+(-1).*b.*c.*kam.*kip.^2.*kmi.*kpa+(-1).*b.^2.*c.* ...\\n  \
+kam.*kip.*kma.*kmi.*kpa+(-1).*b.*c.*kap.*kim.*kip.*kma.*kpi+(-1).* ...\\n  \
+b.*c.*kap.*kim.*kma.^2.*kpi+(-1).*b.*c.*kim.*kip.^2.*kmi.*kpi+(-1) ...\\n  \
+.*b.*c.*kim.*kip.*kma.*kmi.*kpi+(-1).*b.^2.*c.*kim.*kip.*kma.* ...\\n  \
+kmi.*kpi+(-1).*b.^2.*c.*kim.*kma.^2.*kmi.*kpi+(-1).*b.*c.^2.*kap.* ...\\n  \
+kip.*kma.*kpa.*kpi+(-1).*b.*c.*cw.*kap.*kip.*kma.*kpa.*kpi+(-1).* ...\\n  \
+b.*c.^2.*kip.^2.*kmi.*kpa.*kpi+(-1).*b.*c.*cw.*kip.^2.*kmi.*kpa.* ...\\n  \
+kpi+(-1).*b.^2.*c.^2.*kip.*kma.*kmi.*kpa.*kpi+(-1).*b.*c.*cw.* ...\\n  \
+kip.*kma.*kmi.*kpa.*kpi)).^(-1),(-1).*((-1).*kam.*kap.^2.*kma.* ...\\n  \
+kpa+(-1).*kam.*kap.*kip.*kmi.*kpa+(-1).*kam.*kap.*kma.*kmi.*kpa+( ...\\n  \
+-1).*b.*kam.*kap.*kma.*kmi.*kpa+(-1).*b.*kam.*kip.*kmi.^2.*kpa+( ...\\n  \
+-1).*b.*kam.*kma.*kmi.^2.*kpa+(-1).*kap.^2.*kim.*kma.*kpi+(-1).* ...\\n  \
+kap.*kim.*kip.*kmi.*kpi+(-1).*kap.*kim.*kma.*kmi.*kpi+(-1).*c.* ...\\n  \
+kap.^2.*kma.*kpa.*kpi+(-1).*cw.*kap.^2.*kma.*kpa.*kpi+(-1).*c.* ...\\n  \
+kap.*kip.*kmi.*kpa.*kpi+(-1).*cw.*kap.*kip.*kmi.*kpa.*kpi+(-1).* ...\\n  \
+b.*c.*kap.*kma.*kmi.*kpa.*kpi+(-1).*cw.*kap.*kma.*kmi.*kpa.*kpi).* ...\\n  \
+(kam.*kap.*kip.*kma.*kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.* ...\\n  \
+kmi.*kpa+kap.*kim.*kip.*kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+kim.* ...\\n  \
+kip.^2.*kmi.*kpi+kim.*kip.*kma.*kmi.*kpi+b.*kim.*kip.*kma.*kmi.* ...\\n  \
+kpi+b.*kim.*kma.^2.*kmi.*kpi+c.*kap.*kip.*kma.*kpa.*kpi+cw.*kap.* ...\\n  \
+kip.*kma.*kpa.*kpi+c.*kip.^2.*kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.* ...\\n  \
+kpi+b.*c.*kip.*kma.*kmi.*kpa.*kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^( ...\\n  \
+-1).*(1+(-1).*cw.^(-1).*((-1).*b.*kap.^2.*kim.*kma.^2+(-2).*b.* ...\\n  \
+kap.*kim.*kip.*kma.*kmi+(-1).*b.*kap.*kim.*kma.^2.*kmi+(-1).* ...\\n  \
+b.^2.*kap.*kim.*kma.^2.*kmi+(-1).*b.*kim.*kip.^2.*kmi.^2+(-1).*b.* ...\\n  \
+kim.*kip.*kma.*kmi.^2+(-1).*b.^2.*kim.*kip.*kma.*kmi.^2+(-1).* ...\\n  \
+b.^2.*kim.*kma.^2.*kmi.^2+(-1).*b.*c.*kap.*kip.*kma.*kmi.*kpa+(-1) ...\\n  \
+.*b.*cw.*kap.*kip.*kma.*kmi.*kpa+(-1).*b.*c.*kip.^2.*kmi.^2.*kpa+( ...\\n  \
+-1).*b.*cw.*kip.^2.*kmi.^2.*kpa+(-1).*b.^2.*c.*kip.*kma.*kmi.^2.* ...\\n  \
+kpa+(-1).*b.*cw.*kip.*kma.*kmi.^2.*kpa).*(kam.*kap.*kip.*kma.*kpa+ ...\\n  \
+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.*kma.* ...\\n  \
+kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.* ...\\n  \
+kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.* ...\\n  \
+kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.* ...\\n  \
+kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1)+(-1).*cw.^(-1).*((-1).*b.* ...\\n  \
+kam.*kap.^2.*kma.^2+(-2).*b.*kam.*kap.*kip.*kma.*kmi+(-1).*b.* ...\\n  \
+kam.*kap.*kma.^2.*kmi+(-1).*b.^2.*kam.*kap.*kma.^2.*kmi+(-1).*b.* ...\\n  \
+kam.*kip.^2.*kmi.^2+(-1).*b.*kam.*kip.*kma.*kmi.^2+(-1).*b.^2.* ...\\n  \
+kam.*kip.*kma.*kmi.^2+(-1).*b.^2.*kam.*kma.^2.*kmi.^2+(-1).*b.*c.* ...\\n  \
+kap.^2.*kma.^2.*kpi+(-1).*b.*cw.*kap.^2.*kma.^2.*kpi+(-1).*b.*c.* ...\\n  \
+kap.*kip.*kma.*kmi.*kpi+(-1).*b.*cw.*kap.*kip.*kma.*kmi.*kpi+(-1) ...\\n  \
+.*b.^2.*c.*kap.*kma.^2.*kmi.*kpi+(-1).*b.*cw.*kap.*kma.^2.*kmi.* ...\\n  \
+kpi).*(kam.*kap.*kip.*kma.*kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.* ...\\n  \
+kma.*kmi.*kpa+kap.*kim.*kip.*kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+ ...\\n  \
+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.*kmi.*kpi+b.*kim.*kip.*kma.* ...\\n  \
+kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.*kap.*kip.*kma.*kpa.*kpi+cw.* ...\\n  \
+kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.*kmi.*kpa.*kpi+cw.*kip.^2.*kmi.* ...\\n  \
+kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.*kpi+cw.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi).^(-1)+(-1).*((-1).*kam.*kap.^2.*kma.*kpa+(-1).*kam.*kap.* ...\\n  \
+kip.*kmi.*kpa+(-1).*kam.*kap.*kma.*kmi.*kpa+(-1).*b.*kam.*kap.* ...\\n  \
+kma.*kmi.*kpa+(-1).*b.*kam.*kip.*kmi.^2.*kpa+(-1).*b.*kam.*kma.* ...\\n  \
+kmi.^2.*kpa+(-1).*kap.^2.*kim.*kma.*kpi+(-1).*kap.*kim.*kip.*kmi.* ...\\n  \
+kpi+(-1).*kap.*kim.*kma.*kmi.*kpi+(-1).*c.*kap.^2.*kma.*kpa.*kpi+( ...\\n  \
+-1).*cw.*kap.^2.*kma.*kpa.*kpi+(-1).*c.*kap.*kip.*kmi.*kpa.*kpi+( ...\\n  \
+-1).*cw.*kap.*kip.*kmi.*kpa.*kpi+(-1).*b.*c.*kap.*kma.*kmi.*kpa.* ...\\n  \
+kpi+(-1).*cw.*kap.*kma.*kmi.*kpa.*kpi).*(kam.*kap.*kip.*kma.*kpa+ ...\\n  \
+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.*kma.* ...\\n  \
+kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.* ...\\n  \
+kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.* ...\\n  \
+kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.* ...\\n  \
+kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1)+(-1).*cw.^(-1).*((-1).*b.* ...\\n  \
+c.*kam.*kap.^2.*kma.*kpa+(-1).*b.*c.*kam.*kap.*kip.*kmi.*kpa+(-1) ...\\n  \
+.*b.*c.*kam.*kap.*kma.*kmi.*kpa+(-1).*b.^2.*c.*kam.*kap.*kma.* ...\\n  \
+kmi.*kpa+(-1).*b.*c.*kam.*kip.*kmi.^2.*kpa+(-1).*b.^2.*c.*kam.* ...\\n  \
+kma.*kmi.^2.*kpa+(-1).*b.*c.*kap.^2.*kim.*kma.*kpi+(-1).*b.*c.* ...\\n  \
+kap.*kim.*kip.*kmi.*kpi+(-1).*b.^2.*c.*kap.*kim.*kma.*kmi.*kpi+( ...\\n  \
+-1).*b.*c.^2.*kap.^2.*kma.*kpa.*kpi+(-1).*b.*c.*cw.*kap.^2.*kma.* ...\\n  \
+kpa.*kpi+(-1).*b.*c.^2.*kap.*kip.*kmi.*kpa.*kpi+(-1).*b.*c.*cw.* ...\\n  \
+kap.*kip.*kmi.*kpa.*kpi+(-1).*b.^2.*c.^2.*kap.*kma.*kmi.*kpa.*kpi+ ...\\n  \
+(-1).*b.*c.*cw.*kap.*kma.*kmi.*kpa.*kpi).*(kam.*kap.*kip.*kma.* ...\\n  \
+kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.* ...\\n  \
+kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.* ...\\n  \
+kma.*kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+ ...\\n  \
+c.*kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.* ...\\n  \
+kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1)+(-1).*cw.^(-1).*(kam.*kap.* ...\\n  \
+kip.*kma.*kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.* ...\\n  \
+kim.*kip.*kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+ ...\\n  \
+kim.*kip.*kma.*kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.* ...\\n  \
+kma.^2.*kmi.*kpi+c.*kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.* ...\\n  \
+kpa.*kpi+c.*kip.^2.*kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.* ...\\n  \
+kip.*kma.*kmi.*kpa.*kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1).*((-1) ...\\n  \
+.*b.*c.*kam.*kap.*kip.*kma.*kpa+(-1).*b.*c.*kam.*kip.^2.*kmi.*kpa+ ...\\n  \
+(-1).*b.^2.*c.*kam.*kip.*kma.*kmi.*kpa+(-1).*b.*c.*kap.*kim.*kip.* ...\\n  \
+kma.*kpi+(-1).*b.*c.*kap.*kim.*kma.^2.*kpi+(-1).*b.*c.*kim.* ...\\n  \
+kip.^2.*kmi.*kpi+(-1).*b.*c.*kim.*kip.*kma.*kmi.*kpi+(-1).*b.^2.* ...\\n  \
+c.*kim.*kip.*kma.*kmi.*kpi+(-1).*b.^2.*c.*kim.*kma.^2.*kmi.*kpi+( ...\\n  \
+-1).*b.*c.^2.*kap.*kip.*kma.*kpa.*kpi+(-1).*b.*c.*cw.*kap.*kip.* ...\\n  \
+kma.*kpa.*kpi+(-1).*b.*c.^2.*kip.^2.*kmi.*kpa.*kpi+(-1).*b.*c.* ...\\n  \
+cw.*kip.^2.*kmi.*kpa.*kpi+(-1).*b.^2.*c.^2.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+(-1).*b.*c.*cw.*kip.*kma.*kmi.*kpa.*kpi)).^(-1),(1+(-1).*cw.^( ...\\n  \
+-1).*((-1).*b.*kap.^2.*kim.*kma.^2+(-2).*b.*kap.*kim.*kip.*kma.* ...\\n  \
+kmi+(-1).*b.*kap.*kim.*kma.^2.*kmi+(-1).*b.^2.*kap.*kim.*kma.^2.* ...\\n  \
+kmi+(-1).*b.*kim.*kip.^2.*kmi.^2+(-1).*b.*kim.*kip.*kma.*kmi.^2+( ...\\n  \
+-1).*b.^2.*kim.*kip.*kma.*kmi.^2+(-1).*b.^2.*kim.*kma.^2.*kmi.^2+( ...\\n  \
+-1).*b.*c.*kap.*kip.*kma.*kmi.*kpa+(-1).*b.*cw.*kap.*kip.*kma.* ...\\n  \
+kmi.*kpa+(-1).*b.*c.*kip.^2.*kmi.^2.*kpa+(-1).*b.*cw.*kip.^2.* ...\\n  \
+kmi.^2.*kpa+(-1).*b.^2.*c.*kip.*kma.*kmi.^2.*kpa+(-1).*b.*cw.* ...\\n  \
+kip.*kma.*kmi.^2.*kpa).*(kam.*kap.*kip.*kma.*kpa+kam.*kip.^2.* ...\\n  \
+kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.*kma.*kpi+b.*kap.* ...\\n  \
+kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.*kmi.*kpi+b.* ...\\n  \
+kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.*kap.*kip.* ...\\n  \
+kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.*kmi.*kpa.* ...\\n  \
+kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.*kpi+cw.* ...\\n  \
+kip.*kma.*kmi.*kpa.*kpi).^(-1)+(-1).*cw.^(-1).*((-1).*b.*kam.* ...\\n  \
+kap.^2.*kma.^2+(-2).*b.*kam.*kap.*kip.*kma.*kmi+(-1).*b.*kam.* ...\\n  \
+kap.*kma.^2.*kmi+(-1).*b.^2.*kam.*kap.*kma.^2.*kmi+(-1).*b.*kam.* ...\\n  \
+kip.^2.*kmi.^2+(-1).*b.*kam.*kip.*kma.*kmi.^2+(-1).*b.^2.*kam.* ...\\n  \
+kip.*kma.*kmi.^2+(-1).*b.^2.*kam.*kma.^2.*kmi.^2+(-1).*b.*c.* ...\\n  \
+kap.^2.*kma.^2.*kpi+(-1).*b.*cw.*kap.^2.*kma.^2.*kpi+(-1).*b.*c.* ...\\n  \
+kap.*kip.*kma.*kmi.*kpi+(-1).*b.*cw.*kap.*kip.*kma.*kmi.*kpi+(-1) ...\\n  \
+.*b.^2.*c.*kap.*kma.^2.*kmi.*kpi+(-1).*b.*cw.*kap.*kma.^2.*kmi.* ...\\n  \
+kpi).*(kam.*kap.*kip.*kma.*kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.* ...\\n  \
+kma.*kmi.*kpa+kap.*kim.*kip.*kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+ ...\\n  \
+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.*kmi.*kpi+b.*kim.*kip.*kma.* ...\\n  \
+kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.*kap.*kip.*kma.*kpa.*kpi+cw.* ...\\n  \
+kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.*kmi.*kpa.*kpi+cw.*kip.^2.*kmi.* ...\\n  \
+kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.*kpi+cw.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi).^(-1)+(-1).*((-1).*kam.*kap.^2.*kma.*kpa+(-1).*kam.*kap.* ...\\n  \
+kip.*kmi.*kpa+(-1).*kam.*kap.*kma.*kmi.*kpa+(-1).*b.*kam.*kap.* ...\\n  \
+kma.*kmi.*kpa+(-1).*b.*kam.*kip.*kmi.^2.*kpa+(-1).*b.*kam.*kma.* ...\\n  \
+kmi.^2.*kpa+(-1).*kap.^2.*kim.*kma.*kpi+(-1).*kap.*kim.*kip.*kmi.* ...\\n  \
+kpi+(-1).*kap.*kim.*kma.*kmi.*kpi+(-1).*c.*kap.^2.*kma.*kpa.*kpi+( ...\\n  \
+-1).*cw.*kap.^2.*kma.*kpa.*kpi+(-1).*c.*kap.*kip.*kmi.*kpa.*kpi+( ...\\n  \
+-1).*cw.*kap.*kip.*kmi.*kpa.*kpi+(-1).*b.*c.*kap.*kma.*kmi.*kpa.* ...\\n  \
+kpi+(-1).*cw.*kap.*kma.*kmi.*kpa.*kpi).*(kam.*kap.*kip.*kma.*kpa+ ...\\n  \
+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.*kma.* ...\\n  \
+kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.*kma.* ...\\n  \
+kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+c.* ...\\n  \
+kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.* ...\\n  \
+kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1)+(-1).*cw.^(-1).*((-1).*b.* ...\\n  \
+c.*kam.*kap.^2.*kma.*kpa+(-1).*b.*c.*kam.*kap.*kip.*kmi.*kpa+(-1) ...\\n  \
+.*b.*c.*kam.*kap.*kma.*kmi.*kpa+(-1).*b.^2.*c.*kam.*kap.*kma.* ...\\n  \
+kmi.*kpa+(-1).*b.*c.*kam.*kip.*kmi.^2.*kpa+(-1).*b.^2.*c.*kam.* ...\\n  \
+kma.*kmi.^2.*kpa+(-1).*b.*c.*kap.^2.*kim.*kma.*kpi+(-1).*b.*c.* ...\\n  \
+kap.*kim.*kip.*kmi.*kpi+(-1).*b.^2.*c.*kap.*kim.*kma.*kmi.*kpi+( ...\\n  \
+-1).*b.*c.^2.*kap.^2.*kma.*kpa.*kpi+(-1).*b.*c.*cw.*kap.^2.*kma.* ...\\n  \
+kpa.*kpi+(-1).*b.*c.^2.*kap.*kip.*kmi.*kpa.*kpi+(-1).*b.*c.*cw.* ...\\n  \
+kap.*kip.*kmi.*kpa.*kpi+(-1).*b.^2.*c.^2.*kap.*kma.*kmi.*kpa.*kpi+ ...\\n  \
+(-1).*b.*c.*cw.*kap.*kma.*kmi.*kpa.*kpi).*(kam.*kap.*kip.*kma.* ...\\n  \
+kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.*kim.*kip.* ...\\n  \
+kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+kim.*kip.* ...\\n  \
+kma.*kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.*kma.^2.*kmi.*kpi+ ...\\n  \
+c.*kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.*kpa.*kpi+c.*kip.^2.* ...\\n  \
+kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1)+(-1).*cw.^(-1).*(kam.*kap.* ...\\n  \
+kip.*kma.*kpa+kam.*kip.^2.*kmi.*kpa+kam.*kip.*kma.*kmi.*kpa+kap.* ...\\n  \
+kim.*kip.*kma.*kpi+b.*kap.*kim.*kma.^2.*kpi+kim.*kip.^2.*kmi.*kpi+ ...\\n  \
+kim.*kip.*kma.*kmi.*kpi+b.*kim.*kip.*kma.*kmi.*kpi+b.*kim.* ...\\n  \
+kma.^2.*kmi.*kpi+c.*kap.*kip.*kma.*kpa.*kpi+cw.*kap.*kip.*kma.* ...\\n  \
+kpa.*kpi+c.*kip.^2.*kmi.*kpa.*kpi+cw.*kip.^2.*kmi.*kpa.*kpi+b.*c.* ...\\n  \
+kip.*kma.*kmi.*kpa.*kpi+cw.*kip.*kma.*kmi.*kpa.*kpi).^(-1).*((-1) ...\\n  \
+.*b.*c.*kam.*kap.*kip.*kma.*kpa+(-1).*b.*c.*kam.*kip.^2.*kmi.*kpa+ ...\\n  \
+(-1).*b.^2.*c.*kam.*kip.*kma.*kmi.*kpa+(-1).*b.*c.*kap.*kim.*kip.* ...\\n  \
+kma.*kpi+(-1).*b.*c.*kap.*kim.*kma.^2.*kpi+(-1).*b.*c.*kim.* ...\\n  \
+kip.^2.*kmi.*kpi+(-1).*b.*c.*kim.*kip.*kma.*kmi.*kpi+(-1).*b.^2.* ...\\n  \
+c.*kim.*kip.*kma.*kmi.*kpi+(-1).*b.^2.*c.*kim.*kma.^2.*kmi.*kpi+( ...\\n  \
+-1).*b.*c.^2.*kap.*kip.*kma.*kpa.*kpi+(-1).*b.*c.*cw.*kap.*kip.* ...\\n  \
+kma.*kpa.*kpi+(-1).*b.*c.^2.*kip.^2.*kmi.*kpa.*kpi+(-1).*b.*c.* ...\\n  \
+cw.*kip.^2.*kmi.*kpa.*kpi+(-1).*b.^2.*c.^2.*kip.*kma.*kmi.*kpa.* ...\\n  \
+kpi+(-1).*b.*c.*cw.*kip.*kma.*kmi.*kpa.*kpi)).^(-1)];\\n\"\>"], "Output",
+ CellChangeTimes->{3.8281282512259693`*^9, 3.828128384676756*^9},
+ CellLabel->"Out[13]=",ExpressionUUID->"8608bba4-82e6-4a7d-8a34-4f26174938be"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{949., 502.5},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+FrontEndVersion->"12.1 for Microsoft Windows (64-bit) (June 19, 2020)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"753eadc9-ab41-4726-b835-075f236c7ce0"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 171, 3, 98, "Title",ExpressionUUID->"06823bc5-6cd3-4215-97d7-1bab5af73681"],
+Cell[754, 27, 468, 9, 78, "Text",ExpressionUUID->"9ec941f6-59f6-4f51-86db-2b0c9cca1c8d"],
+Cell[1225, 38, 151, 2, 28, "Input",ExpressionUUID->"21a974fd-0e1d-4b10-8e65-c457c6ceb89a"],
+Cell[1379, 42, 2180, 57, 145, "Input",ExpressionUUID->"0ff519e3-16ab-4f24-835c-ef3f1ba98163"],
+Cell[3562, 101, 172, 3, 34, "Text",ExpressionUUID->"c912abb9-723b-4d8d-83f8-3bbe33094841"],
+Cell[CellGroupData[{
+Cell[3759, 108, 632, 14, 28, "Input",ExpressionUUID->"2d0debed-1fea-4129-b170-fd13db14e930"],
+Cell[4394, 124, 1497, 43, 52, "Output",ExpressionUUID->"cc259b4a-a51c-4051-803d-303c47686734"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[5928, 172, 209, 3, 28, "Input",ExpressionUUID->"f33fec86-ce44-4c71-bdfc-8b552a374fce"],
+Cell[6140, 177, 2005, 54, 130, "Output",ExpressionUUID->"5a0b1692-6a93-4d45-898f-87abaeff094e"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[8182, 236, 207, 3, 28, "Input",ExpressionUUID->"339b6cae-d290-46b9-865a-3abef351159c"],
+Cell[8392, 241, 727, 12, 32, "Output",ExpressionUUID->"90cb26a3-fc83-43e5-beba-3c9c724ca97c"]
+}, Open  ]],
+Cell[9134, 256, 281, 5, 28, "Input",ExpressionUUID->"ba7890a4-50da-44cc-9f83-fc85c118fbd8"],
+Cell[9418, 263, 585, 10, 28, "Input",ExpressionUUID->"fbef29ad-1cd7-4503-95b2-b429d94d07f5"],
+Cell[10006, 275, 572, 12, 28, "Input",ExpressionUUID->"6ccc63b9-61f7-4cc3-9cd0-587cc1258cfd"],
+Cell[10581, 289, 886, 17, 28, "Input",ExpressionUUID->"d34ce43c-8a3c-463d-9596-4606ce655f4b"],
+Cell[CellGroupData[{
+Cell[11492, 310, 219, 4, 54, "Subsection",ExpressionUUID->"7c698513-c496-4e6c-961b-31ea2286cd24"],
+Cell[11714, 316, 132, 2, 28, "Input",ExpressionUUID->"0dfddb72-0613-4ba3-8161-c1b7601fd697"],
+Cell[CellGroupData[{
+Cell[11871, 322, 616, 12, 28, "Input",ExpressionUUID->"00fff5d3-03a2-455b-a464-6891b5ed9be4"],
+Cell[12490, 336, 37549, 498, 9662, "Output",ExpressionUUID->"8608bba4-82e6-4a7d-8a34-4f26174938be"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+

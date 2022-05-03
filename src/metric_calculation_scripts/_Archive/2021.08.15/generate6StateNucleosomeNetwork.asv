@@ -1,0 +1,102 @@
+function [networkInfo, RSymRaw] = generate6StateNucleosomeNetwork(n_wrong_bound...
+          ,n_right_bound,activity_vec_full,...
+          transitionInfoArray)
+
+    nStates = length(n_wrong_bound);        
+    n_total_bound = n_wrong_bound + n_right_bound;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Generate symbolic transition rate matrix    
+        
+    % initialize core rate multiplier variables
+    syms cr cw alphaa positive % extra "a" on alpha is just to keep matlab 
+
+    % initialize nucleosome on/off rates
+    syms ki ka positive
+
+    % initialize core binding rates
+    syms kp km positive
+
+    % initialize cooperativity weights % note that wi*wa = wp
+    syms wi wa positive
+    wp = wi*wa;
+    % initialize non-eq factor (taken to be greater than 1)
+    syms gammaa positive
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % specify var order, var bounds, and whether it can be swept by default
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    networkInfo = struct;
+    networkInfo.sweepVarList = [cr cw alphaa ki ka kp km wi wa gammaa];
+    networkInfo.sweepVarStrings = cellstr(string(networkInfo.sweepVarList));
+    networkInfo.defaultValues = [1 100 100 ones(1,length(networkInfo.sweepVarList)-3)];
+    networkInfo.sweepFlags = [0 0 0 ones(1,length(networkInfo.sweepVarList)-3)]==1;                      
+    networkInfo.fourStateInputFlags = [1 0 0 ones(1,length(networkInfo.sweepVarList)-3)]==1;
+    networkInfo.fourStateWrongInputFlags = [0 1 1 ones(1,length(networkInfo.sweepVarList)-3)]==1;
+    networkInfo.paramBounds = repmat([-4 ; 4 ], 1, length(networkInfo.sweepFlags));    
+    
+    % apply specific constraints
+    gammaaFlags = contains(networkInfo.sweepVarStrings,'gammaa');    
+    networkInfo.paramBounds(1,gammaaFlags) = 0; % gammaa>=1
+    deactivationFlags = contains(networkInfo.sweepVarStrings,{'wa','wi'});
+    networkInfo.paramBounds(2,deactivationFlags) = 0;    
+    
+    % networkInfo.paramBounds(1,end-3:end) = 0;
+    networkInfo.cr_index = 1;
+    networkInfo.cw_index = 2;
+    networkInfo.b_index = 3;
+
+    % Provide info for equilibrium constraint application and cycle flux
+    % calculations
+    networkInfo.fluxFactorFlags = contains(networkInfo.sweepVarStrings,'gammaa');        
+
+    % HM constraints
+    networkInfo.hmRatePairs = [kp; km; ki; ka]; 
+    networkInfo.hmRatePairIndices = NaN(size(networkInfo.hmRatePairs));
+    for i = 1:size(networkInfo.hmRatePairIndices,1)
+        networkInfo.hmRatePairIndices(i,:) = find(ismember(networkInfo.sweepVarList,networkInfo.hmRatePairs(i,:)));
+    end
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % perform basic assignments based on type
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    RSymRaw = sym(zeros(nStates));
+
+    % basic binding and unbinding rates (right and wrong factors have same base
+    % rate)
+    RSymRaw(ismember(transitionInfoArray,[1,2]) & ~activity_vec_full) = kp/wp;
+    RSymRaw(ismember(transitionInfoArray,[1,2]) & activity_vec_full) = kp;
+
+    RSymRaw(ismember(transitionInfoArray,-[1,2])) = km;
+%     RSym(ismember(transitionInfoArray,-[1,2]) & activity_vec_full) = kma;
+
+    % basic locus fluctuation rates    
+    RSymRaw(ismember(transitionInfoArray,3) & n_total_bound==0) = ka;
+    RSymRaw(ismember(transitionInfoArray,3) & n_total_bound==1) = ka*wa*gammaa;    
+
+    RSymRaw(ismember(transitionInfoArray,-3) & n_total_bound==0) = ki;
+    RSymRaw(ismember(transitionInfoArray,-3) & n_total_bound==1) = ki/wi;    
+
+    % add specificity and concentration factors
+    RSymRaw(transitionInfoArray==1) = RSymRaw(transitionInfoArray==1)*cr;
+    RSymRaw(transitionInfoArray==2) = RSymRaw(transitionInfoArray==2)*cw;
+    RSymRaw(transitionInfoArray==-2) = RSymRaw(transitionInfoArray==-2)*alphaa;   
+
+    % add diagonal factors 
+    RSym(eye(size(RSymRaw,1))==1) = -sum(RSymRaw);
+    
+    %% construct right and wrong graphs from main fraph
+    RSymRight = RSymRaw(1:4,1:4);
+    RSymWrong = RSymRaw([1 6 5 4],[1 6 5 4]);
+    
+    
+    %%
+    % save helper variables
+    activeStates = find(activity_vec_full);
+    networkInfo.nStates = nStates;
+    networkInfo.activeStates = activeStates;    
+    networkInfo.transitionInfoArray = transitionInfoArray;
+    networkInfo.n_right_bound = n_right_bound;
+    networkInfo.n_wrong_bound = n_wrong_bound;
+    networkInfo.n_total_bound = n_total_bound;
+    networkInfo.activeStateFilter = activity_vec_full;

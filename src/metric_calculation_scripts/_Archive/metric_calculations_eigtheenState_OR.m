@@ -1,0 +1,373 @@
+% This script explores possibility of keeping SS vec in symbolic form
+clear
+close all
+addpath(genpath('../'))
+rmpath(genpath('../utilities/metricFunctions/'));
+addpath(['../utilities/metricFunctions/n6_OR_test/']);
+% generate path to save metric functions 
+savePath = '../utilities/metricFunctions/n6_OR_test/';
+mkdir(savePath);
+
+% define some basic parameters
+activeStatesBase = [3 4 5];
+baseNum = 6;
+nStates = 18;
+sensingEdges = [2,1 ; 3,4];
+stateIndex = 1:nStates;
+
+% define symbolic variables
+RSymFull = sym('k%d%d', [nStates nStates],'positive');
+
+% zero out forbidden transitions
+[fromRef,toRef] = meshgrid(1:baseNum,1:baseNum);
+diffRef = abs(fromRef-toRef);
+toRefHalved = toRef<=baseNum/2;
+fromRefHalved = fromRef<=baseNum/2;
+permittedConnectionsRaw= (diffRef==1 & toRefHalved==fromRefHalved) | diffRef==baseNum/2;
+
+% permute these connections to follow a more intuitive labeling scheme
+indexCurr = 1:baseNum;
+indexAdjusted = circshift(indexCurr,floor(baseNum/4));
+indexAdjusted = [indexAdjusted(1:baseNum/2) fliplr(indexAdjusted(baseNum/2+1:end))];
+[~,si] = sort(indexAdjusted);
+permittedConnectionsInit = permittedConnectionsRaw(si,si);
+
+% generate an array with binding info
+transitionInfoInit = zeros(size(permittedConnectionsInit));
+
+% specific binding/unbinding
+spec_pairs = {[1,2],[4,3]};
+for s = 1:length(spec_pairs)
+    ind1 = spec_pairs{s}(1);
+    ind2 = spec_pairs{s}(2);
+    % update
+    transitionInfoInit(ind2,ind1) = 1;
+    transitionInfoInit(ind1,ind2) = -1;
+end
+
+% non-specific binding/unbinding
+non_spec_pairs = {[1,6],[4,5]};
+for s = 1:length(non_spec_pairs)
+    ind1 = non_spec_pairs{s}(1);
+    ind2 = non_spec_pairs{s}(2);
+    % update
+    transitionInfoInit(ind2,ind1) = 2;
+    transitionInfoInit(ind1,ind2) = -2;
+end
+
+% locus activity fluctuations
+locus_pairs = {[1,4],[6,5],[2,3]};
+for s = 1:length(locus_pairs)
+    ind1 = locus_pairs{s}(1);
+    ind2 = locus_pairs{s}(2);
+    % update
+    transitionInfoInit(ind2,ind1) = 3;
+    transitionInfoInit(ind1,ind2) = -3;
+end
+
+% generate array tht indicates activity state
+activity_vec_init = false(1,baseNum);
+activity_vec_init(activeStatesBase) = 1;
+
+% generate flags indicating numbers of right and wrong factors bound
+n_right_bound_init = zeros(size(activity_vec_init));
+n_wrong_bound_init = n_right_bound_init;
+n_right_bound_init([2 3]) = 1;
+n_wrong_bound_init([5 6]) = 1;
+
+% generate full 18 state array
+rate_mask = repelem(eye(3),baseNum,baseNum);
+
+% full connection array
+permittedConnections = repmat(permittedConnectionsInit,3,3);%permittedConnectionsInit
+permittedConnections = permittedConnections.*rate_mask;
+
+% full binding array
+transitionInfoArray = repmat(transitionInfoInit,3,3);%permittedConnectionsInit
+transitionInfoArray = transitionInfoArray.*rate_mask;
+
+% full activity vector
+activity_vec_full = repmat(activity_vec_init,1,3);
+
+% binding info vecs
+n_right_bound = repmat(n_right_bound_init,1,3);
+n_right_bound(baseNum+1:2*baseNum) = n_right_bound(baseNum+1:2*baseNum) + 1;
+
+n_wrong_bound = repmat(n_wrong_bound_init,1,3);
+n_wrong_bound(2*baseNum+1:3*baseNum) = n_wrong_bound(2*baseNum+1:3*baseNum) + 1;
+
+n_total_bound = n_wrong_bound + n_right_bound;
+
+% add cross-plane connections. Let us assume the 6 state plane that is
+% equivalent to the simpler 6 state model considered correspond to the
+% first block
+for i = 1:baseNum
+    binding_ids = [1 2];
+    for j = 1:2
+        ind1 = i;
+        ind2 = baseNum*j + i;
+        
+        % add to array
+        permittedConnections(ind1,ind2) = 1;
+        permittedConnections(ind2,ind1) = 1;
+        
+        % add binding info
+        transitionInfoArray(ind2,ind1) = binding_ids(j); % specify whether it is a cognate or non-cognate factor binding
+        transitionInfoArray(ind1,ind2) = -2; % all unbinding events from non-specific site are equivalent
+    end
+end
+permittedConnections = permittedConnections==1;
+
+%% Generate symbolic transition rate matrix
+
+% initialize core rate multiplier variables
+syms cr cw b positive
+
+% initialize core locus activity transition rates
+syms kip kap kim kam positive
+
+% initialize core binding rates
+syms kpi kpa kmi kma positive
+
+% initialize weights to allow for impact of 2 bound
+syms wip wap wma wmi positive
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% perform basic assignments based on type
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+RSym = sym(zeros(nStates));
+
+% basic binding and unbinding rates
+RSym(ismember(transitionInfoArray,[1,2]) & ~activity_vec_full) = kpi;
+RSym(ismember(transitionInfoArray,[1,2]) & activity_vec_full) = kpa;
+
+RSym(ismember(transitionInfoArray,-[1,2]) & ~activity_vec_full) = kmi;
+RSym(ismember(transitionInfoArray,-[1,2]) & activity_vec_full) = kma;
+
+% basic locus fluctuation rates
+RSym(ismember(transitionInfoArray,3) & n_total_bound==0) = kam;
+RSym(ismember(transitionInfoArray,3) & n_total_bound>0) = kap;
+
+RSym(ismember(transitionInfoArray,-3) & n_total_bound==0) = kim;
+RSym(ismember(transitionInfoArray,-3) & n_total_bound>0) = kip;
+
+% layer on 2-bound multipliers for unbinding 
+f1 = ismember(transitionInfoArray,-[1,2]) & n_total_bound==2 & ~activity_vec_full;
+RSym(f1) = RSym(f1) / wmi;
+
+f2 = ismember(transitionInfoArray,-[1,2]) & n_total_bound==2 & activity_vec_full;
+RSym(f2) = RSym(f2) / wma;
+
+% add specificity and concentration factors
+RSym(transitionInfoArray==1) = RSym(transitionInfoArray==1)*cr;
+RSym(transitionInfoArray==2) = RSym(transitionInfoArray==2)*cw;
+RSym(transitionInfoArray==-2) = RSym(transitionInfoArray==-2)*b;
+
+% add diagonal factors 
+RSym(eye(size(RSym,1))==1) = -sum(RSym);
+    
+         
+%% %%%%%%%%% derive expressions for production rate and sharpness %%%%%%%%%%
+
+activeStates = find(activity_vec_full);
+ssVecSym = sym('ss%d', [1 nStates],'positive');
+
+% production rate
+productionRateSym = sum(ssVecSym(activeStates));
+productionRateFun = matlabFunction(productionRateSym,'File',[savePath 'productionRateFunction'],'Optimize',true);
+% 
+% % take derivative wrpt c to get sharpness
+% % sharpnessSym = diff(productionRateSym,c);
+% % sharpnessFun = matlabFunction(sharpnessSym,'File',[savePath 'sharpnessFunction'],'Optimize',true);
+% 
+% % take derivative wrpt c for correct state only
+% % sharpnessRightSym = diff(ssVecSym(activeStates(1:2)),c);
+% % matlabFunction(sharpnessRightSym,'File',[savePath 'sharpnessRightFunction'],'Optimize',true);
+% 
+% 
+% %% %%%%%%%%%%%%%%%%%%%%%%%% Half max constraints %%%%%%%%%%%%%%%%%%%%%%%%%%
+% % to start, we've gotta make a simplified version of the full 6 state model
+% % that assumes symmetry between right and wrong cycles
+% 
+% % for i = 4
+% %     tic
+% %     nFun = 3;
+% %     if i == 1
+% %         nFun = 2;
+% %     end
+% %     for j = 1:nFun
+% %         numStr = [num2str(i) num2str(j)];
+% %         try        
+% %             eval(['a' numStr 'Sym = a' numStr 'FunFromMathematica(RSymRaw);'])
+% %             savePathFull = [savePath 'a' numStr 'SymFun'];
+% %             eval(['matlabFunction(a' numStr 'Sym,"File",savePathFull,"Optimize",true);'])
+% %         catch
+% %             disp(['error in ' numStr])
+% %         end
+% %     end
+% %     toc
+% % end
+% 
+% %%
+% % generate and solve systems of equations for expected first passage time
+% % to each active state
+% 
+etInfo = struct;
+for CurrentState = 1:nStates
+    tic
+    % create symbolic vector of passage times
+    etInfo(CurrentState).ETVec = sym(['ET%d' num2str(CurrentState)], [1 nStates]);
+    etInfo(CurrentState).ETVec(CurrentState) = 0;
+    
+    % create adjusted transition matrix
+    etInfo(CurrentState).RSymTo = RSym;
+    etInfo(CurrentState).Rdiag = -reshape(diag(etInfo(CurrentState).RSymTo),1,[]);
+    etInfo(CurrentState).RSymTo = etInfo(CurrentState).RSymTo ./ etInfo(CurrentState).Rdiag;
+    etInfo(CurrentState).RSymTo(:,CurrentState) = 0;
+    etInfo(CurrentState).RSymTo(eye(size(etInfo(CurrentState).RSymTo))==1) = 0;
+    
+    % create system of equations
+    etInfo(CurrentState).eqSys = etInfo(CurrentState).ETVec * etInfo(CurrentState).RSymTo + 1./etInfo(CurrentState).Rdiag;
+    
+    stateFilter = stateIndex~=CurrentState;    
+    
+    etInfo(CurrentState).eqSys = etInfo(CurrentState).eqSys(stateFilter);
+    etInfo(CurrentState).eqSys = etInfo(CurrentState).eqSys == etInfo(CurrentState).ETVec(stateFilter);
+    
+    % solve
+    etInfo(CurrentState).eqSol = solve(etInfo(CurrentState).eqSys,etInfo(CurrentState).ETVec(stateFilter));
+    etInfo(CurrentState).etSolVec = struct2array(etInfo(CurrentState).eqSol);  
+    etInfo(CurrentState).etSolVec = [etInfo(CurrentState).etSolVec(1:CurrentState-1) 0 etInfo(CurrentState).etSolVec(CurrentState:end)];
+    etInfo(CurrentState).ETMean = etInfo(CurrentState).etSolVec*ssVecSym';
+    
+    toc
+end
+ 
+%% %%%%%%%%%%%%%%%%%%% get expressions for variance %%%%%%%%%%%%%%%%%%%%%%%
+
+
+f_vec = zeros(1,nStates); % initiation rate for each state
+f_vec(activeStates) = 1; % assume all active states produce at the same rate
+
+% construct Z matrix 
+% see eqs 28 and 29 from: "Asymptotic Formulas for Markov Processes with
+%                          Applications to Simulation"
+ZSym = sym(size(RSym));
+for i = 1:nStates
+    for j = 1:nStates
+        if i == j
+            ZSym(i,j) = ssVecSym(j)*etInfo(j).ETMean;
+        else
+            ZSym(i,j) = ssVecSym(j)*(etInfo(j).ETMean-etInfo(j).etSolVec(i));
+        end
+    end
+end
+
+% now caculate the variance (see eq 12 from above source)
+varSum = 0;
+for i = 1:size(RSym,2)
+    for j = 1:size(RSym,2)
+        varSum = varSum + f_vec(i)*ssVecSym(i)*ZSym(i,j)*f_vec(j);
+    end
+end
+varSum = 2*varSum;
+
+% convert to function
+tic
+VarFun = matlabFunction(varSum,'File',[savePath 'intrinsicVarianceFunction'],'Optimize',true);
+toc
+%% %%%%%%%%%%%%%%%%%%%%%%%%% Cycle time calculations %%%%%%%%%%%%%%%%%%%%%%%
+% 
+% %%% mean time to go OFF->ON %%%
+% 
+% % create symbolic vector of passage times
+% ETVecON = sym('ET%dON', [1 nStates]);
+% ETVecON(activeStates) = 0;
+% 
+% % create adjusted transition matrix
+% RSymON = RSym;
+% Rdiag = -reshape(diag(RSymON),1,[]);
+% RSymON = RSymON ./ Rdiag;
+% RSymON(:,activeStates) = 0;
+% RSymON(eye(size(RSymON))==1) = 0;
+% 
+% % generate system of equations and solve
+% eqSysON = ETVecON * RSymON + 1./Rdiag;
+% offStateFilter = ~ismember(stateIndex,activeStates);
+% eqSysON = eqSysON(offStateFilter);
+% eqSysON = eqSysON == ETVecON(offStateFilter);
+% eqSolON = solve(eqSysON,ETVecON(offStateFilter));
+% 
+% % transform results into vector and calculate the weighted avers
+% solVecON = struct2array(eqSolON);
+% 
+% % calculate inbound flux into each OFF state from the ON States
+% inFluxVecOFF = RSym(offStateFilter,~offStateFilter) * ssVecSym(~offStateFilter)';
+% ETONMean = (solVecON*inFluxVecOFF) / sum(inFluxVecOFF);
+% ETONFun = matlabFunction(ETONMean,'File',[savePath 'TauOFFFunction'],'Optimize',true);
+% 
+% %%% mean time to go ON->OFF %%%
+% onStateFilter = ismember(stateIndex,activeStates);
+% 
+% % create symbolic vector of passage times
+% ETVecOFF = sym('ET%dOFF', [1 nStates]);
+% ETVecOFF(~onStateFilter) = 0;
+% 
+% % create adjusted transition matrix
+% RSymOFF = RSym;
+% Rdiag = -reshape(diag(RSymOFF),1,[]);
+% RSymOFF = RSymOFF ./ Rdiag;
+% 
+% RSymOFF(:,~onStateFilter) = 0;
+% RSymOFF(eye(size(RSymOFF))==1) = 0;
+% 
+% % generate system of equations and solve
+% eqSysOFF = ETVecOFF * RSymOFF + 1./Rdiag;
+% eqSysOFF = eqSysOFF(onStateFilter);
+% eqSysOFF = eqSysOFF == ETVecOFF(onStateFilter);
+% eqSolOFF = solve(eqSysOFF,ETVecOFF(onStateFilter));
+% 
+% % transform results into vector and calculate the weighted avers
+% solVecOFF = struct2array(eqSolOFF);
+% % calculate incoming flux from OFF to ON states
+% inFluxVecON = RSym(onStateFilter,~onStateFilter) * ssVecSym(~onStateFilter)';
+% ETOFFMean = (solVecOFF*inFluxVecON) / sum(inFluxVecON);
+% ETOFFFun = matlabFunction(ETOFFMean,'File',[savePath 'TauONFunction'],'Optimize',true);
+% 
+% %%% Cycle Time %%%
+% TauCycleFun = matlabFunction(ETONMean+ETOFFMean,'File',[savePath 'TauCycleFunction'],'Optimize',true);
+% 
+% %%% %%%%%%%%%%%%%%%%%%%% Energy Dissipation Expressions %%%%%%%%%%%%%%%%%%%%
+% 
+% %%% Entropy production %%%
+% % See equation 5 in: Thermodynamics of Statistical Inference by Cells
+% 
+% entropyRateSym = 0;
+% 
+% for i = 1:nStates
+%     for j = 1:nStates
+%         if i ~= j && RSym(i,j)~=0
+%             entropyRateSym = entropyRateSym + ssVecSym(i)*RSym(j,i)*log(RSym(j,i)/RSym(i,j));
+%         end
+%     end
+% end
+% 
+% matlabFunction(entropyRateSym,'File',[savePath 'entropyRateFunction'],'Optimize',true);
+% 
+% %%% calculate flux (only well-defined for single-loop systems)
+% % netFluxSym = ssVecSym(1)*RSym(4,1) - ssVecSym(4)*RSym(1,4);
+% % netFluxFun = matlabFunction(netFluxSym);
+% % matlabFunction(netFluxSym,'File',[savePath 'netFluxFunction4State']);
+% 
+% % %%% forward and backward fluxes
+% % [Numerator, Denominator] = numden(productionRateSym);
+% % forwardFluxSym = RSym(1,2)*RSym(2,3)*RSym(3,4)*RSym(4,1) / Denominator;
+% % forwardFluxFun = matlabFunction(forwardFluxSym);
+% % matlabFunction(forwardFluxSym,'File',[savePath 'forwardFluxFunction4State']);
+% % 
+% % backwardFluxSym = RSym(2,1)*RSym(3,2)*RSym(4,3)*RSym(1,4) / Denominator;
+% % backwardFluxFun = matlabFunction(backwardFluxSym);
+% % matlabFunction(backwardFluxSym,'File',[savePath 'backwardFluxFunction4State']);
+% 

@@ -1,0 +1,91 @@
+% script to make plots of example profiles
+clear
+close all
+addpath('../utilities')
+readPath = '../../out/parameter_search_v2/';
+figPath = '../../fig/example_profiles/';
+mkdir(figPath);
+suffix_cell = {'fidelity_dynamicRange','fidelity_info-rate','decisionRate_boundPosition'};
+
+% first look at high-performing fidelity network
+c_range = linspace(2/11,20/11,101);
+suffix_ind = 1;
+mci = 1;
+metric_indices = [4 5];
+load([readPath 'edge_sim_results_' suffix_cell{suffix_ind} '.mat'])
+% extract rate and metric arrays
+rate_array_neq = reshape(permute(simulation_results(2).rate_array_noneq(:,:,:,:,mci),[1 4 3 2]),[],8);
+metric_array_neq = reshape(permute(simulation_results(2).metric_array_noneq(:,metric_indices,:,:,mci),[1 4 3 2]),[],2);           
+rate_array_eq = reshape(permute(simulation_results(2).rate_array_eq(:,:,:,:,mci),[1 4 3 2]),[],8);
+metric_array_eq = reshape(permute(simulation_results(2).metric_array_eq(:,metric_indices,:,:,mci),[1 4 3 2]),[],2);           
+% find high-performing networl
+[max_f, max_i] = max(metric_array_neq(:,1));
+rates_neq = rate_array_neq(max_i,:);
+rates_eq = rate_array_eq(max_i,:);
+% generate profiles for eq and noneq 
+[~, profile_neq, dd_prof_neq, var_vec_neq] = calculateMetricsConstrained(rates_neq,c_range,0);        
+[~, profile_eq, dd_prof_eq, var_vec_eq] = calculateMetricsConstrained(rates_eq,c_range,0);        
+% plot
+p_fold_neq = profile_neq ./ profile_neq(end);
+p_fold_eq = profile_eq ./ profile_eq(end);
+
+fidelity_fold_fig = figure;
+hold on
+plot(c_range, p_fold_neq);
+plot(c_range, p_fold_eq);
+scatter(c_range([1 end 1 end]),[p_fold_neq([1 end]) p_fold_eq([1 end])],'MarkerFaceColor','black',...
+    'MarkerEdgeAlpha',0)
+grid on
+xlabel('[R]')
+ylabel('normalized transcription rate')
+legend('non-eq','eq')
+set(gca,'Fontsize',14)
+saveas(fidelity_fold_fig,[figPath 'fidelity_fold_profile.tif'])
+
+fidelity_abs_fig = figure;
+hold on
+plot(c_range, profile_neq);
+plot(c_range, profile_eq);
+scatter(c_range([1 end 1 end]),[profile_neq([1 end]) profile_eq([1 end])],'MarkerFaceColor','black',...
+    'MarkerEdgeAlpha',0)
+grid on
+xlabel('[R]')
+ylabel('transcription rate')
+legend('non-eq','eq')
+set(gca,'Fontsize',14)
+% ylim([0 1])
+saveas(fidelity_abs_fig,[figPath 'fidelity_abs_profile.tif'])
+
+% Now dynamic range
+[max_d, max_i] = max(metric_array_neq(:,2));
+dr_rates_neq = rate_array_neq(max_i,:);
+dr_rates_eq = rate_array_eq(max_i,:);
+
+[~, dr_profile_neq, dd_prof, var_vec] = calculateMetricsConstrained(dr_rates_neq,c_range,0);        
+[~, dr_profile_eq, ~, ~] = calculateMetricsConstrained(dr_rates_eq,c_range,0);        
+
+drange_fig = figure;
+hold on
+plot(c_range, dr_profile_neq);
+plot(c_range, dr_profile_eq);
+scatter(c_range([1 end 1 end]),[dr_profile_neq([1 end]) dr_profile_eq([1 end])],'MarkerFaceColor','black',...
+    'MarkerEdgeAlpha',0)
+grid on
+xlabel('[R]')
+ylabel('transcription rate')
+legend('non-eq','eq')
+set(gca,'Fontsize',14)
+saveas(drange_fig,[figPath 'dynamic_range_profile.tif'])
+
+
+%% illustrative noise plot
+cmap = brewermap(9,'Set2');
+ub_p = dr_profile_neq(1:end-1) + sqrt(var_vec);
+lb_p = dr_profile_neq(1:end-1) - sqrt(var_vec);
+
+noise_fig = figure;
+hold on
+f = fill([c_range(1:end-1) fliplr(c_range(1:end-1))],[ub_p fliplr(lb_p)],cmap(2,:));
+f.FaceAlpha = .5;
+f.EdgeAlpha = 0;
+plot(c
