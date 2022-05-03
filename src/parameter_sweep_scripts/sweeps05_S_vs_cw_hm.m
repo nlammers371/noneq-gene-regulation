@@ -1,23 +1,19 @@
-% script to call core parameter sweep function to examine tradeoffs between
-% different transcritional input/output behaviors
+% Sweep observed sharpness as a function of w/c
 
 clear 
 close all
 addpath(genpath('../utilities/'))
 
-% as we add additional reaction, this will multiply the state space by
-% a factor of 2, since each state from smaller "base" network can coincide
-% with the new factor being (1) engaged or (2) disengaged
 
 % set basic parameters
 n_bs_vec = 1:5;
 n_g_vec = 1:5;
 ns_flag = 1;
 ds_flag = 1;
-
+% hm_flag = 1;
 % Set Dropbox directory
 DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
-writePath = [DropboxFolder filesep 'sweeps05B_info_vs_cw' filesep];
+writePath = [DropboxFolder filesep 'sweeps05C_S_vs_cw' filesep];
 mkdir(writePath);
 
 % this contains paths used to address correct functions
@@ -46,20 +42,18 @@ for m = 1:length(n_g_vec)
 end    
                       
 % set sim options
-sweep_options = {'n_sim',200,'n_seeds',25,'n_iters_max',50, 'numerical_precision',10, 'useParpool',1,'ds_factor',100};
+sweep_options = {'n_sim',500,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, 'useParpool',1,'ds_factor',100};
 
 %%   
 cw_index = find(strcmp(metric_names,'CW'));  
 ir_index = find(strcmp(metric_names,'IR'));
 
-for equilibrium_flag = 0%:1
-    for m = 2:4
-        if m == 2
-            bs_list = 3:5;
-        elseif m == 3
-            bs_list = 3:4;
-        elseif m == 4 
-            bs_list = 3;
+for equilibrium_flag = 0:1
+    for m = 1:4
+        if m == 1
+            bs_list = 1:5;
+        else
+            bs_list = 1;
         end
         
         for n = bs_list
