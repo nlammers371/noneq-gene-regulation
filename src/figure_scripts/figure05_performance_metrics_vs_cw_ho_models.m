@@ -13,7 +13,6 @@ mkdir(FigPath);
 n_plot = 3e3; % number of points to plot
 n_samp = 5e4; % number of points to plot
 markerAlpha = 0.5; % marker transparency
-markerSize = 75; % marker size
 bit_factor = log2(exp(1));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -336,7 +335,7 @@ set(gca,'Color',[228,221,209]/255)
 saveas(s_p_fig,[FigPath 's_p_vs_cw_LC2.png'])
 saveas(s_p_fig,[FigPath 's_p_vs_cw_LC2.pdf']) 
 
-%%
+
 delete([p1 p2 p3]);
 delete([s1 s2]);
 
@@ -364,6 +363,7 @@ p1 = plot(repmat(dt_cw_vec,2,1),repmat(yl',1,3),'-.','Color','k','LineWidth',1.5
 legend(slb, 'N_{LC}=2','N_{LC}=3','N_{LC}=4','N_{LC}=5','Location','northwest','Color','w')
 saveas(s_p_fig,[FigPath 's_p_vs_cw.png'])
 saveas(s_p_fig,[FigPath 's_p_vs_cw.pdf'])
+
 %% get some numbers
 i = 1;
 cw_vec = master_struct_multi_g(i).cw_boundary;
@@ -373,6 +373,7 @@ p_vec = master_struct_multi_g(i).prec_boundary./master_struct_multi_bs(1).prec_m
 
 p_gain = p_vec(find(cw_vec<=dt_cw_vec(end),1,'last'))
 s_gain = s_vec(find(cw_vec<=dt_cw_vec(end),1,'last'))
+
 %% s0 vs. f figure
 
 close all
