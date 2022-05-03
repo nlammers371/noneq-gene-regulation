@@ -10,7 +10,6 @@ metric_names = {'ProductionRate','Sharpness','Precision','Phi','IR',...
 metric_ub_vec = repelem(Inf,length(metric_names));
 metric_lb_vec = repelem(-Inf,length(metric_names));
 
-
 % initialize output param array
 param_array_out = param_array;                            
 if ~isempty(param_array)      

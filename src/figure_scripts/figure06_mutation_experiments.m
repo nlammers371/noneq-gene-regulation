@@ -6,7 +6,7 @@ addpath(genpath('../utilities/'))
 
 % set basic parameters
 nStates = 6;
-paramBounds = repmat([-10 ; 6],1,11); % constrain transition rate magnitude
+paramBounds = repmat([-10 ; 5],1,11); % constrain transition rate magnitude
 [~,~,metric_names] = calculateMetricsSym_v2([]);
 
 % specify function path
