@@ -8,12 +8,11 @@ DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\Nonequilibrium\Nick\';
 FigPath = [DropboxFolder '\manuscript\appendices' filesep];
 mkdir(FigPath)
 %%
-close all
 PolII_initiation_rate = 20; % Pol II per minute (based off of estimates for eve stripe 2 from Lammers 2020)
 % leverage fact that variance per burst cycle is equal to some constant times b^2, where
 % b=a(a-1). For the case of the 4 state system away from equalibrium, this
 % constant is just 1, such that:
-%      \sigma <= r^2*\tau_b x b^2 x 1
+%      \sigma <= \tau_b x b^2 x 1
 % The key is to realize that the relative contribution from poisson remains
 % constant with a, while bursting component increases linearly with tau_b
 
@@ -26,50 +25,17 @@ burst_noise_array = PolII_initiation_rate^2*(a_vec.*(1-a_vec)).^2 .* burst_time_
 rel_array = poisson_noise_array./(poisson_noise_array+burst_noise_array);
 
 poisson_noise_fig = figure;
-cmap = flipud(brewermap([],'YlGnBu'));
+cmap = flipud(brewermap([],'Spectral'));
 colormap(cmap)
 p = pcolor(poisson_noise_array);
 p.EdgeAlpha = 0.05;
 
 set(gca,'Fontsize',14);
 xlabel('burst cycle time (minutes)')
-ylabel('fraction of time in active state (a)')
+ylabel('normalized activ')
 
 h = colorbar;
-ylabel(h,'predicted Poisson noise component (\lambda)')
-yt = yticks;
-set(gca,'yticklabels',round(a_vec(yt),2)*100)
+ylabel(h
+
 saveas(poisson_noise_fig,[FigPath 'poisson_heatmap.pdf']);
-
-burst_noise_fig = figure;
-cmap = flipud(brewermap([],'YlGnBu'));
-colormap(cmap)
-p = pcolor(burst_noise_array);
-p.EdgeAlpha = 0.05;
-
-set(gca,'Fontsize',14);
-xlabel('burst cycle time (minutes)')
-ylabel('fraction of time in active state (a)')
-
-h = colorbar;
-ylabel(h,'minimum bursting noise component (\sigma^2)')
-yt = yticks;
-set(gca,'yticklabels',round(a_vec(yt),2)*100)
-saveas(burst_noise_fig,[FigPath 'burst_noise_heatmap.pdf']);
-
-rel_noise_fig = figure;
-cmap = flipud(brewermap([],'YlGnBu'));
-colormap(cmap)
-p = pcolor(rel_array);
-p.EdgeAlpha = 0.05;
-
-set(gca,'Fontsize',14);
-xlabel('burst cycle time (minutes)')
-ylabel('fraction of time in active state (a)')
-caxis([0 0.5])
-h = colorbar;
-ylabel(h,'maximum poisson contribution (\lambda/(\lambda+\sigma))')
-yt = yticks;
-set(gca,'yticklabels',round(a_vec(yt),2)*100)
-saveas(rel_noise_fig,[FigPath 'rel_noise_heatmap.pdf']);
 
