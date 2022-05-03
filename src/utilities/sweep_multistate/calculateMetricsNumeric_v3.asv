@@ -10,6 +10,7 @@ metric_names = {'ProductionRate','Sharpness','Precision','Phi','IR',...
 metric_ub_vec = repelem(Inf,length(metric_names));
 metric_lb_vec = repelem(-Inf,length(metric_names));
 
+
 % initialize output param array
 param_array_out = param_array;                            
 if ~isempty(param_array)      
@@ -19,7 +20,6 @@ if ~isempty(param_array)
     
     % NL: these bounds prevent common errors related to numerical precision
     phi_index = find(strcmp(metric_names,'Phi'));
-    cw_index = find(strcmp(metric_names,'CW'));
     tau_index = strcmp(metric_names,'TauCycle'); 
     sharpness_index = strcmp(metric_names,'TauCycle'); 
     precision_index = strcmp(metric_names,'Precision'); 
@@ -29,13 +29,9 @@ if ~isempty(param_array)
         else
             metric_lb_vec(phi_index) = 1e-2; % NL: this seems to avoid most precision errors
         end
-        if any(ismember(simInfo.edge_metric_indices,[cw_index]))
-            metric_ub_vec(phi_index) = 5e5;        
-        else
-            metric_ub_vec(phi_index) = 5e4; 
-        end        
     end    
-    metric_lb_vec(sharpness_index) = 1e-3;    
+    metric_lb_vec(sharpness_index) = 1e-3;
+    metric_ub_vec(phi_index) = 5e4;
     metric_lb_vec(precision_index) = 1e-3;
     metric_ub_vec(tau_index) = 5e4;
 
