@@ -287,9 +287,9 @@ parfor nti = 1:n_sim%(nti = 1:n_sim,useParpool*NumWorkers) %NL: note that if use
     simResults(nti).metric_array = metric_array(1:last_index,:);
     simResults(nti).rate_array = param_array(1:last_index,:);
     simResults(nti).iter_id_vec = iter_id_vec(1:last_index,:);
-    simResults(nti).sim_id_vec = nti*ones(size(simResults(nti).iter_id_vec));
+    simResults(nti).sim_id_vec = nti*ones(size(iter_id_vec(1:last_index,:)));
     simResults(nti).area_vec = area_vec(1:i_pass-1);
-    simResults(nti).area_id_vec = nti*ones(size(simResults(nti).area_vec));
+    simResults(nti).area_id_vec = nti*ones(size(area_vec(1:i_pass-1)));
     simResults(nti).n_iters = i_pass-1;
     simResults(nti).convergence_flag = i_pass-1 < n_iters_max;
 end       
@@ -320,7 +320,7 @@ if n_sim > 0
     simResultsOut.iter_id_vec = vertcat(simResults.iter_id_vec);
     simResultsOut.sim_id_vec = vertcat(simResults.sim_id_vec);
     simResultsOut.areaVec = vertcat(simResults.area_vec);
-    simResultsOut.areaIDVec = vertcat(SimResults.area_id_vec);
+    simResultsOut.areaIDVec = vertcat(simResults.area_id_vec);
     simResultsOut.convergence_flags = vertcat(simResults.convergence_flag);
 
     % remove NaN values
