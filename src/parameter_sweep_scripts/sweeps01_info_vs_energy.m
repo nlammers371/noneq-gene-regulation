@@ -14,10 +14,10 @@ n_bs_vec = 1:5;
 n_g_vec = 1:5;
 ns_flag = 0;
 
-% Set Dropbox directory
+% Set path to directory capable of storing large data files
 DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
-writePath = [DropboxFolder filesep 'sweeps01_info_vs_energy_v3' filesep];
-mkdir(writePath);
+writePath = [DropboxFolder filesep 'sweeps01_info_vs_energy_v4' filesep];
+% mkdir(writePath);
 
 % this contains paths used to address correct functions
 functionPathCell = cell(length(n_g_vec),length(n_bs_vec));
@@ -45,7 +45,8 @@ for m = 1:length(n_g_vec)
 end    
                       
 % set sim options
-sweep_options = {'n_sim',200,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, 'useParpool',1};
+sweep_options = {'n_sim',200,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, 'useParpool',1,'equilibrium_flag',false,'TauCycleTime',1,...
+                            'downsample_output',true};
 %%   
 phi_index = find(strcmp(metric_names,'Phi'));    
 ir_index = find(strcmp(metric_names,'IR'));
@@ -53,9 +54,9 @@ ir_index = find(strcmp(metric_names,'IR'));
 
 for m = 1:length(n_g_vec)
     if m < 2
-        bs_list = 1:5;
+        bs_list = 1:5; % only sweep multi-site models for systems with one reaction step (two locus conformations)
     else
-        bs_list = 1;%:2;
+        bs_list = 1;
     end
     for n = bs_list
                               
@@ -63,9 +64,8 @@ for m = 1:length(n_g_vec)
         tic
         [sim_info, ~, sim_results] = ...
                             param_sweep_multi_v3([phi_index ir_index],...
-                            functionPathCell{m,n}, sweep_options{:},...
-                            'equilibrium_flag',false,'TauCycleTime',1,...
-                            'paramBounds',paramBounds,'downsample_output',true);
+                            functionPathCell{m,n}, sweep_options{:}...
+                            );
                           
         % save
         disp('saving...')

@@ -10,15 +10,13 @@ addpath(genpath('../utilities/'))
 % with the new factor being (1) engaged or (2) disengaged
 
 % set basic parameters
-n_bs_vec = 1:5;
-n_g_vec = 1:5;
+n_bs_vec = 1:5; % number of binding sites (NB)
+n_g_vec = 1:5; % number of locus conformations less 1 (NLC-1)
 ns_flag = 0;
 ds_flag = 1;
-eq_only_flag = 0;
-neq_only_flag = 0;
 % Set Dropbox directory
 DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
-writePath = [DropboxFolder filesep 'sweeps02_sharpness_vs_precision_v2' filesep];
+writePath = [DropboxFolder filesep 'sweeps02_sharpness_vs_precision_v4' filesep];
 mkdir(writePath);
 
 % this contains paths used to address correct functions
@@ -47,8 +45,8 @@ for m = 1:length(n_g_vec)
 end    
                       
 % set sim options
-sweep_options = {'n_sim',24,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, ...
-            'useParpool',1,'downsample_output',ds_flag==1,'TauCycleTime',1};
+sweep_options = {'n_sim',200,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, 'useParpool',1,'TauCycleTime',1,...
+                            'downsample_output',ds_flag};
 %%   
 rate_index = find(strcmp(metric_names,'ProductionRate'));
 sharpness_index = find(strcmp(metric_names,'Sharpness'));
@@ -57,49 +55,45 @@ phi_index = find(strcmp(metric_names,'Phi'));
 tau_index = find(strcmp(metric_names,'TauCycle'));    
 ir_index = find(strcmp(metric_names,'IR'));
         
-paramBounds = repmat([-5; 5],1,10);
-paramBounds(1,6) = 0;
-paramBounds(2,7) = 0;
-sweepFlags = true(1,10);
-sweepFlags([1 10]) = false;
-% paramBounds(:,8) = 0;
-% paramBounds(2,4) = 0;
-% results_struct = struct;
-% iter = 1;
-for m = 1%length(n_g_vec)
-%     bs_list = 4;
-    for n = 3%1:5
-                              
-        % call sweep function
+
+for m = 1:length(n_g_vec)
+
+    if m < 2
+        bs_list = 1:5; % only sweep multi-site models for systems with one reaction step (two locus conformations)
+    else
+        bs_list = 1;
+    end
+    
+    for n = bs_list
+          
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % sweep non-equilibrium architectures
         tic
-        if ~eq_only_flag
-            [sim_info, sim_results_long, sim_results] = ...
-                                param_sweep_multi_v3([sharpness_index precision_index],...
-                                functionPathCell{m,n}, sweep_options{:},'paramBounds',paramBounds,'equilibrium_flag',false,'sweepFlags',sweepFlags);
-            if ~ds_flag
-                sim_results = sim_results_long;
-            end
-%             save
-            disp('saving neq results...')
-            saveName = saveNameCell{m,n};
-%             save([writePath 'sweep_info_' saveName '_neq.mat'],'sim_info');
-%             save([writePath 'sweep_results_' saveName '_neq.mat'],'sim_results', '-v7.3');
+        
+        [sim_info, sim_results_long, sim_results] = ...
+                            param_sweep_multi_v3([sharpness_index precision_index],...
+                            functionPathCell{m,n}, sweep_options{:},'equilibrium_flag',false);
+        if ~ds_flag
+            sim_results = sim_results_long;
         end
-        if ~neq_only_flag
-            [sim_info, sim_results_long, sim_results] = ...
-                                param_sweep_multi_v3([sharpness_index precision_index],...
-                                functionPathCell{m,n}, sweep_options{:},'paramBounds',paramBounds,'equilibrium_flag',true,'sweepFlags',sweepFlags);
-            if ~ds_flag
-                sim_results = sim_results_long;
-            end
-            % save
-            disp('saving...')
-            saveName = saveNameCell{m,n};
-%             save([writePath 'sweep_info_' saveName '_eq.mat'],'sim_info');
-%             save([writePath 'sweep_results_' saveName '_eq.mat'],'sim_results', '-v7.3');
-        end          
-        toc;    
-%         iter = iter + 1;
+
+        disp('saving neq results...')
+        saveName = saveNameCell{m,n};
+        save([writePath 'sweep_info_' saveName '_neq.mat'],'sim_info');
+        save([writePath 'sweep_results_' saveName '_neq.mat'],'sim_results', '-v7.3');        
+        
+        [sim_info, sim_results_long, sim_results] = ...
+                            param_sweep_multi_v3([sharpness_index precision_index],...
+                            functionPathCell{m,n}, sweep_options{:},'equilibrium_flag',true);
+        if ~ds_flag
+            sim_results = sim_results_long;
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % sweep non-equilibrium architectures
+        disp('saving eq results...')
+        saveName = saveNameCell{m,n};
+        save([writePath 'sweep_info_' saveName '_eq.mat'],'sim_info');
+        save([writePath 'sweep_results_' saveName '_eq.mat'],'sim_results', '-v7.3');
     end
 end    
 
