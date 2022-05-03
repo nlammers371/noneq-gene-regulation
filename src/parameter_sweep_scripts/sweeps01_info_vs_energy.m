@@ -52,7 +52,7 @@ phi_index = find(strcmp(metric_names,'Phi'));
 ir_index = find(strcmp(metric_names,'IR'));
         
 
-for m = 1:length(n_g_vec)
+for m = length(n_g_vec)-1
     if m < 2
         bs_list = 1:5; % only sweep multi-site models for systems with one reaction step (two locus conformations)
     else
