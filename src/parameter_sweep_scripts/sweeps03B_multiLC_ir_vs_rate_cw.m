@@ -13,7 +13,7 @@ ds_flag = 1;
 
 % Set Dropbox directory
 DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
-writePath = [DropboxFolder filesep 'sweeps03_info_vs_cw_v2' filesep];
+writePath = [DropboxFolder filesep 'sweeps03B_ir_vs_rate_cw' filesep];
 mkdir(writePath);
 
 % this contains paths used to address correct functions
@@ -43,7 +43,7 @@ end
                       
 % set sim options
 sweep_options = {'n_sim',25,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, ...
-                'useParpool',1,'TauCycleTime',1,'downsample_output',ds_flag};
+                'useParpool',1,'TauCycleTime',1,'downsample_output',ds_flag,'cw',1e3,'equilibrium_flag',0};
 %%   
 rate_index = find(strcmp(metric_names,'ProductionRate'));
 sharpness_index = find(strcmp(metric_names,'Sharpness'));
@@ -51,42 +51,33 @@ precision_index = find(strcmp(metric_names,'Precision'));
 phi_index = find(strcmp(metric_names,'Phi'));    
 tau_index = find(strcmp(metric_names,'TauCycle'));  
 cw_index = find(strcmp(metric_names,'CW'));  
-ir_index = find(strcmp(metric_names,'IR'));
-        
+ir_index = find(strcmp(metric_names,'IR'));        
 
-for equilibrium_flag = 0:1
-    for m = 1:4
-        if m == 1
-            bs_list = 1:5;
-        else
-            bs_list = 1;
-        end
-        for n = bs_list
-            % call sweep function
-            tic
-            [sim_info, sim_results, sim_results_short] = ...
-                                param_sweep_multi_v3([rate_index ir_index],...
-                                functionPathCell{m,n}, sweep_options{:},...
-                                'equilibrium_flag',equilibrium_flag);
+for m = 1:4
+    
+    for n = 1
+        % call sweep function
+        tic
+        [sim_info, sim_results, sim_results_short] = ...
+                            param_sweep_multi_v3([rate_index ir_index],...
+                            functionPathCell{m,n}, sweep_options{:}...
+                            );
 
-            if ds_flag
-                sim_results = sim_results_short;
-            end            
-            suffix = '_neq';
-            if equilibrium_flag
-                suffix = '_eq';
-            end
-            % save
-            disp('saving...')
-            saveName = saveNameCell{m,n};
-            save([writePath 'sweep_info_' saveName suffix '.mat'],'sim_info')
-            save([writePath 'sweep_results_' saveName suffix '.mat'],'sim_results', '-v7.3')
+        if ds_flag
+            sim_results = sim_results_short;
+        end            
+        suffix = '_neq';     
+        % save
+        disp('saving...')
+        saveName = saveNameCell{m,n};
+        save([writePath 'sweep_info_' saveName suffix '.mat'],'sim_info')
+        save([writePath 'sweep_results_' saveName suffix '.mat'],'sim_results', '-v7.3')
 
-            toc;    
-    %         iter = iter + 1;
-        end
-    end    
-end
+        toc;    
+%         iter = iter + 1;
+    end
+end    
+
 %%
 [ir_max, ir_i] = nanmax(sim_results.metric_array(:,ir_index))
 rates_opt = log10(sim_results.rate_array(ir_i,:))
