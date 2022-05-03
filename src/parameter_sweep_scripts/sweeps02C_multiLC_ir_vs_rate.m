@@ -13,10 +13,12 @@ addpath(genpath('../utilities/'))
 n_bs_vec = 1:5;
 n_g_vec = 1:5;
 ns_flag = 0;
-
-% Set path to directory capable of storing large data files
+ds_flag = 1;
+eq_only_flag = 0;
+neq_only_flag = 0;
+% Set Dropbox directory
 DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
-writePath = [DropboxFolder filesep 'sweeps01_info_vs_energy_v4' filesep];
+writePath = [DropboxFolder filesep 'sweeps02C_ir_vs_rate' filesep];
 mkdir(writePath);
 
 % this contains paths used to address correct functions
@@ -45,35 +47,30 @@ for m = 1:length(n_g_vec)
 end    
                       
 % set sim options
-sweep_options = {'n_sim',200,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, 'useParpool',1,'equilibrium_flag',false,'TauCycleTime',1,...
-                            'downsample_output',true};
+sweep_options = {'n_sim',200,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, ...
+            'useParpool',1,'downsample_output',ds_flag,'TauCycleTime',1,'equilibrium_flag',false};
 %%   
-phi_index = find(strcmp(metric_names,'Phi'));    
+rate_index = find(strcmp(metric_names,'ProductionRate'));
+sharpness_index = find(strcmp(metric_names,'Sharpness'));
 ir_index = find(strcmp(metric_names,'IR'));
         
-
-for m = 1:length(n_g_vec)
-    if m < 2
-        bs_list = 1:5; % only sweep multi-site models for systems with one reaction step (two locus conformations)
-    else
-        bs_list = 1;
-    end
-    for n = bs_list
+for m = 1:length(n_g_vec)-1
+    for n = 1
                               
         % call sweep function
-        tic
-        [sim_info, ~, sim_results] = ...
-                            param_sweep_multi_v3([phi_index ir_index],...
-                            functionPathCell{m,n}, sweep_options{:}...
-                            );
-                          
+        tic        
+        [sim_info, sim_results_long, sim_results] = ...
+                            param_sweep_multi_v3([rate_index ir_index],...
+                            functionPathCell{m,n}, sweep_options{:});
+        if ~ds_flag
+            sim_results = sim_results_long;
+        end
         % save
-        disp('saving...')
+        disp('saving neq results...')
         saveName = saveNameCell{m,n};
-        save([writePath 'sweep_info_' saveName '.mat'],'sim_info')
-        save([writePath 'sweep_results_' saveName '.mat'],'sim_results', '-v7.3')
-        
-        toc;    
-
+        save([writePath 'sweep_info_' saveName '_neq.mat'],'sim_info');
+        save([writePath 'sweep_results_' saveName '_neq.mat'],'sim_results', '-v7.3');        
+        toc
     end
 end    
+

@@ -42,8 +42,7 @@ for m = 1:length(n_g_vec)
 end    
                       
 % set sim options
-sweep_options = {'n_sim',25,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, ...
-                'useParpool',1,'TauCycleTime',1,'downsample_output',ds_flag};
+sweep_options = {'n_sim',500,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, 'useParpool',1};
 %%   
 rate_index = find(strcmp(metric_names,'ProductionRate'));
 sharpness_index = find(strcmp(metric_names,'Sharpness'));
@@ -54,25 +53,28 @@ cw_index = find(strcmp(metric_names,'CW'));
 ir_index = find(strcmp(metric_names,'IR'));
         
 
-for equilibrium_flag = 0:1
-    for m = 1:4
-        if m == 1
-            bs_list = 1:5;
-        else
-            bs_list = 1;
+for equilibrium_flag = 0
+    for m = 2:4
+        if m == 2
+            bs_list = 3:5;
+        elseif m == 3
+            bs_list = 3:4;
+        elseif m == 4 
+            bs_list = 3;
         end
         for n = bs_list
             % call sweep function
             tic
             [sim_info, sim_results, sim_results_short] = ...
-                                param_sweep_multi_v3([rate_index ir_index],...
+                                param_sweep_multi_v3([cw_index ir_index],...
                                 functionPathCell{m,n}, sweep_options{:},...
-                                'equilibrium_flag',equilibrium_flag);
+                                'equilibrium_flag',equilibrium_flag,'TauCycleTime',1,...
+                                'downsample_output',ds_flag);
 
             if ds_flag
                 sim_results = sim_results_short;
             end            
-            suffix = '_neq';
+            suffix = '';
             if equilibrium_flag
                 suffix = '_eq';
             end
