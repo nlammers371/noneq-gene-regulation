@@ -1,26 +1,23 @@
 % This script is intended to run stochastic simulations to verify 
 % theoretical expressions for intrinsic noise for the full four state network
-
-% Simulations include poisson noise from stocahstic mRNA production
 clear
 close all
 addpath(genpath('../utilities'))
 
-
-OutPath = '../../out/validation/';
+DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
+OutPath = [DropboxFolder filesep 'appendices' filesep];
 mkdir(OutPath);
 
 % set path to approapriate functions
 functionPath = '../utilities/metricFunctions/n4_OR';
 rmpath(genpath('../utilities/metricFunctions/'));
 addpath(genpath(functionPath));
-addpath('C:\Users\nlamm\projects\noneq-transcription\src\utilities\metricFunctions\n4_OR_NUM\')
 
 %%%%%%%%%%%%%%%%%
 % specify core simulation parameters
 %%%%%%%%%%%%%%%%%
 t_sim = 1e4; % duration of simulation (in burst cycles)
-dT = 1;
+dT = 5;
 time_grid = 0:dT:t_sim;
 % initiation_rate = 1/3; % Pol II per second
 
@@ -71,7 +68,7 @@ myCluster = parcluster('local');
 NumWorkers = myCluster.NumWorkers;
 p = gcp('nocreate');
 if isempty(p)
-  parpool(6);%ceil(NumWorkers/1.5));
+  parpool(24);%ceil(NumWorkers/1.5));
 end      
   
 % calculate predicted metrics
@@ -183,6 +180,7 @@ parfor n = 1:n_sim
 %   sim_struct(n).r_mean_poisson = mean(total_mRNA_array_poisson(end,:))/time_grid(end);
 %   sim_struct(n).r_var_poisson = var(total_mRNA_array_poisson(end,:))/time_grid(end);
   Gaussian_noise_struct(n).mRNA_array = total_mRNA_array;
+  Gaussian_noise_struct(n).time_grid = time_grid;
   
 %   sim_struct(n).tau_on = mean(on_dwell_time_array);
 %   sim_struct(n).tau_off = mean(off_dwell_time_array);
@@ -190,7 +188,7 @@ parfor n = 1:n_sim
   
   % perform normality test
   total_mRNA_array_norm = (total_mRNA_array - mean(total_mRNA_array,2)) ./ std(total_mRNA_array,[],2);
-  Gaussian_noise_struct(n).total_mRNA_array_norm = total_mRNA_array_norm;
+%   Gaussian_noise_struct(n).total_mRNA_array_norm = total_mRNA_array_norm;
   Gaussian_noise_struct(n).p_vec = NaN(size(time_grid));
   Gaussian_noise_struct(n).gauss_flag = NaN(size(time_grid));
   for t = 1:length(time_grid)
@@ -220,6 +218,14 @@ end
 % 
 % plot(nanmean(var_array,2),'-k','LineWidth',4)
 % save results
-save([OutPath 'Gaussian_noise_struct.mat'],'sim_struct')
-
+save([OutPath 'Gaussian_noise_struct.mat'],'Gaussian_noise_struct', '-v7.3')
+%%
+Gaussian_noise_struct = rmfield(Gaussian_noise_struct,'total_mRNA_array_norm');
+%%
+for i = 1:length(Gaussian_noise_struct)
+    total_mRNA_array = Gaussian_noise_struct(i).mRNA_array;
+    total_mRNA_array_ds = interp1(time_grid,total_mRNA_array,0:5:t_sim);
+    Gaussian_noise_struct(i).mRNA_array = total_mRNA_array_ds;
+    Gaussian_noise_struct(i).time_grid = 0:5:t_sim;
+end    
 
