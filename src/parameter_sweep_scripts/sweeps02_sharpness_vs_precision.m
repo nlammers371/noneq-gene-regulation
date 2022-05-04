@@ -16,7 +16,7 @@ ns_flag = 0;
 ds_flag = 1;
 % Set Dropbox directory
 DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
-writePath = [DropboxFolder filesep 'sweeps02_sharpness_vs_precision_v4' filesep];
+writePath = [DropboxFolder filesep 'sweeps02_sharpness_vs_precision_v5' filesep];
 mkdir(writePath);
 
 % this contains paths used to address correct functions
@@ -45,7 +45,7 @@ for m = 1:length(n_g_vec)
 end    
                       
 % set sim options
-sweep_options = {'n_sim',200,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, 'useParpool',1,'TauCycleTime',1,...
+sweep_options = {'n_sim',500,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, 'useParpool',1,'TauCycleTime',1,...
                             'downsample_output',ds_flag};
 %%   
 rate_index = find(strcmp(metric_names,'ProductionRate'));
