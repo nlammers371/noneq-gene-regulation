@@ -332,7 +332,7 @@ for i = length(master_struct_multi_g):-1:1
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Make figure 
+% Make figure 
 
 % downsample phi axis
 phi_axis_ds_g = downsample(phi_axis_g,ds_factor);
@@ -391,7 +391,7 @@ end
 
 set(gca,'xscale','log')
 ylim([0 0.06])
-xlim([5e-3 5e3])
+xlim([5e-3 3e3])
 
 % h = colorbar;
 % ylabel(h,'number of binding sites')
@@ -415,7 +415,7 @@ saveas(info_g_fig,[FigPath 'info_vs_phi_g.png'])
 saveas(info_g_fig,[FigPath 'info_vs_phi_g.pdf']) 
 
 
-%% Plot IR neq bounds as a function of N_LC
+%% Plot IR neq bounds as a function of N_a
 % note that I'm using low Phi as a proxy for eq performance
 
 n_plot = 500;
@@ -469,7 +469,7 @@ saveas(eq_bound_a,[FigPath 'info_vs_a.png'])
 saveas(eq_bound_a,[FigPath 'info_vs_a.pdf']) 
 
 
-%% Plot DT neq bounds as a function of N_LC
+%% Plot DT neq bounds as a function of N_a
 % note that I'm using low Phi as a proxy for eq performance
 
 n_plot = 500;
@@ -479,7 +479,7 @@ neq_bound_a = figure;
 hold on
 dt_minima = [];
 % make plots
-for i = 1:length(master_struct_multi_g)
+for i = 1:length(master_struct_multi_g)-1
     ir_vec = master_struct_multi_g(i).sweep_results.metric_array(:,ir_index_num);
     phi_vec = master_struct_multi_g(i).sweep_results.metric_array(:,phi_index_num);
     dt_vec = 1./master_struct_multi_g(i).sweep_results.metric_array(:,inv_dtime_index_num );
@@ -497,8 +497,8 @@ for i = 1:length(master_struct_multi_g)
 end
 
 % plot quadratic trend
-a_vec = linspace(0,6);
-mdl = fitlm(1+(1:4)',1./dt_minima');
+a_vec = linspace(0,5);
+mdl = fitlm((1:4)',1./dt_minima','Intercept',false);
 trend_vec = predict(mdl,a_vec');
 plot(a_vec,1./trend_vec,'-.k','LineWidth',3);
 
@@ -515,7 +515,7 @@ ax = gca;
 ax.YAxis(1).Color = 'k';
 ax.XAxis(1).Color = 'k';
 ylim([1 5e2])
-xlim([1.5 5.5])
+xlim([0.5 4.5])
 set(gca,'yscale','log')
 neq_bound_a.InvertHardcopy = 'off';
 set(gcf,'color','w');

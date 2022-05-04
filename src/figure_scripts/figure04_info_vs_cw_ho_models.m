@@ -5,7 +5,7 @@ addpath(genpath('../utilities/'))
 
 % %%%%%%%%%%%%%%%%  set relative read and write paths %%%%%%%%%%%%%%%%%%%%
 DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\Nonequilibrium\Nick\';
-DataPath = [DropboxFolder  'SweepOutput\sweeps03_info_vs_cw' filesep ];
+DataPath = [DropboxFolder  'SweepOutput\sweeps03_info_vs_cw_v2' filesep ];
 FigPath = [DropboxFolder '\manuscript\info_vs_cw' filesep];
 mkdir(FigPath);
 
@@ -57,11 +57,11 @@ cw_index = sort([cw_index log10(dt_cw_vec(end))]);
 %%%%%%%%%%%%%%%%%%%%%%%%5
 %%% Load multi bs results
 % get list of sweep results files with only 1 genera TF reaction
-multi_bs_sweep_files_eq = dir([DataPath 'sweep_results*g01*eq*']);
-multi_bs_info_files_eq = dir([DataPath 'sweep_info*g01*eq*']);
+multi_bs_sweep_files_eq = dir([DataPath 'sweep_results*g01_cw1_eq*']);
+multi_bs_info_files_eq = dir([DataPath 'sweep_info*g01_cw1_eq*']);
 
-multi_bs_sweep_files_neq = dir([DataPath 'sweep_results*g01_cw1.mat']);
-multi_bs_info_files_neq = dir([DataPath 'sweep_info*g01_cw1.mat']);
+multi_bs_sweep_files_neq = dir([DataPath 'sweep_results*g01*neq*']);
+multi_bs_info_files_neq = dir([DataPath 'sweep_info*g01_cw1*neq*']);
 
 % load
 master_struct_multi_bs = struct;
@@ -128,8 +128,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%5
 % Load multi g results
 % get list of sweep results files with only 1 genera TF reaction
-multi_g_sweep_files = dir([DataPath 'sweep_results_s01_ns00_g0*_cw1.mat']);
-multi_g_info_files = dir([DataPath 'sweep_info_s01_ns00_g0*_cw1.mat']);
+multi_g_sweep_files = dir([DataPath 'sweep_results_s01_ns00_g0*neq*']);
+multi_g_info_files = dir([DataPath 'sweep_info_s01_ns00_g0*neq*']);
 
 % load
 master_struct_multi_g = struct;
@@ -169,43 +169,43 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%5
 % Load 2BS multi g results
 % get list of sweep results files with only 1 genera TF reaction
-multi_g2_sweep_files = dir([DataPath 'sweep_results_s02_ns00_g0*_cw1.mat']);
-multi_g2_info_files = dir([DataPath 'sweep_info_s02_ns00_g0*_cw1.mat']);
-
-% load
-master_struct_multi_g2 = struct;
-for f = 1:length(multi_g2_sweep_files)
-  
-    load([DataPath multi_g2_sweep_files(f).name])
-    load([DataPath multi_g2_info_files(f).name])
-    
-    master_struct_multi_g2(f).sweep_results = sim_results;
-    master_struct_multi_g2(f).sweep_info = sim_info;
-end    
-
-rng(321);
-
-for i = 1:length(master_struct_multi_g2)
-  
-    % extract vectors
-    metric_array = master_struct_multi_g2(i).sweep_results.metric_array;   
-    cw_vec = metric_array(:,cw_index_num);
-    ir_vec = metric_array(:,ir_index_num)*bit_factor;    
-    dt_vec = 1./metric_array(:,inv_dt_index_num); 
-    % identify boundary points
-    ir_b_vec = NaN(1,length(cw_index)-1);
-    dt_b_vec = NaN(1,length(cw_index)-1);
-    for c = 1:length(cw_index)-1
-        cw_filter = find(cw_vec<cw_index(c+1)&cw_vec>=cw_index(c));
-        [ir_b_vec(c), mi] = nanmax(ir_vec(cw_filter));
-        dt_b_vec(c) = dt_vec(cw_filter(mi));
-    end
-    
-    % store    
-    master_struct_multi_g2(i).cw_boundary = 10.^cw_index(2:end);
-    master_struct_multi_g2(i).ir_boundary = imgaussfilt(ir_b_vec,2);  
-    master_struct_multi_g2(i).dt_boundary = imgaussfilt(dt_b_vec,2);  
-end
+% multi_g2_sweep_files = dir([DataPath 'sweep_results_s02_ns00_g0*_cw1.mat']);
+% multi_g2_info_files = dir([DataPath 'sweep_info_s02_ns00_g0*_cw1.mat']);
+% 
+% % load
+% master_struct_multi_g2 = struct;
+% for f = 1:length(multi_g2_sweep_files)
+%   
+%     load([DataPath multi_g2_sweep_files(f).name])
+%     load([DataPath multi_g2_info_files(f).name])
+%     
+%     master_struct_multi_g2(f).sweep_results = sim_results;
+%     master_struct_multi_g2(f).sweep_info = sim_info;
+% end    
+% 
+% rng(321);
+% 
+% for i = 1:length(master_struct_multi_g2)
+%   
+%     % extract vectors
+%     metric_array = master_struct_multi_g2(i).sweep_results.metric_array;   
+%     cw_vec = metric_array(:,cw_index_num);
+%     ir_vec = metric_array(:,ir_index_num)*bit_factor;    
+%     dt_vec = 1./metric_array(:,inv_dt_index_num); 
+%     % identify boundary points
+%     ir_b_vec = NaN(1,length(cw_index)-1);
+%     dt_b_vec = NaN(1,length(cw_index)-1);
+%     for c = 1:length(cw_index)-1
+%         cw_filter = find(cw_vec<cw_index(c+1)&cw_vec>=cw_index(c));
+%         [ir_b_vec(c), mi] = nanmax(ir_vec(cw_filter));
+%         dt_b_vec(c) = dt_vec(cw_filter(mi));
+%     end
+%     
+%     % store    
+%     master_struct_multi_g2(i).cw_boundary = 10.^cw_index(2:end);
+%     master_struct_multi_g2(i).ir_boundary = imgaussfilt(ir_b_vec,2);  
+%     master_struct_multi_g2(i).dt_boundary = imgaussfilt(dt_b_vec,2);  
+% end
 
 %% Plot range of achievable information rates
 close all
