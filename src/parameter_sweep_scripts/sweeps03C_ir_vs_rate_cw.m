@@ -13,7 +13,7 @@ ds_flag = 1;
 
 % Set Dropbox directory
 DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
-writePath = [DropboxFolder filesep 'sweeps03_info_vs_cw_rerun' filesep];
+writePath = [DropboxFolder filesep 'sweeps03B_ir_vs_rate_cw' filesep];
 mkdir(writePath);
 
 % this contains paths used to address correct functions
@@ -42,7 +42,7 @@ for m = 1:length(n_g_vec)
 end    
                       
 % set sim options
-sweep_options = {'n_sim',1000,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, ...
+sweep_options = {'n_sim',50,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, ...
                 'useParpool',1,'TauCycleTime',1,'downsample_output',ds_flag};
 %%   
 rate_index = find(strcmp(metric_names,'ProductionRate'));
@@ -51,40 +51,49 @@ precision_index = find(strcmp(metric_names,'Precision'));
 phi_index = find(strcmp(metric_names,'Phi'));    
 tau_index = find(strcmp(metric_names,'TauCycle'));  
 cw_index = find(strcmp(metric_names,'CW'));  
-ir_index = find(strcmp(metric_names,'IR'));
-        
+ir_index = find(strcmp(metric_names,'IR'));        
 
-for equilibrium_flag = 1%:1
-    for m = 1
-        if false%m == 1
-            bs_list = 1:5;
-        else
-            bs_list = 2:5;
-        end
-        for n = bs_list
-            % call sweep function
-            tic
-            [sim_info, sim_results, sim_results_short] = ...
-                                param_sweep_multi_v3([cw_index ir_index],...
-                                functionPathCell{m,n}, sweep_options{:},...
-                                'equilibrium_flag',equilibrium_flag);
+% generate option vectors
+% bs_vec = [1 2 3 4 5 1 1 1 1];
+% lc_vec = [1 1 1 1 1 1 2 3 4];
+% eq_vec = [1 1 1 1 1 0 0 0 0];
+bs_vec = [5];
+lc_vec = [1];
+eq_vec = [1];
+cw_vec = [10 1e2 1e3];
+bs_vec_long = repelem(bs_vec,length(cw_vec));
+lc_vec_long = repelem(lc_vec,length(cw_vec));
+eq_vec_long = repelem(eq_vec,length(cw_vec));
+cw_vec_long = repmat(cw_vec,1,length(bs_vec));
 
-            if ds_flag
-                sim_results = sim_results_short;
-            end            
-            suffix = '_neq';
-            if equilibrium_flag
-                suffix = '_eq';
-            end
-            
-            % save
-            disp('saving...')
-            saveName = saveNameCell{m,n};
-            save([writePath 'sweep_info_' saveName suffix '.mat'],'sim_info')
-            save([writePath 'sweep_results_' saveName suffix '.mat'],'sim_results', '-v7.3')
 
-            toc;    
-    
-        end
-    end    
-end
+for i = 1:length(bs_vec_long)
+    n_b = bs_vec_long(i);
+    n_lc = lc_vec_long(i);
+    eq_flag = eq_vec_long(i);
+    cw = cw_vec_long(i);
+
+    tic
+    [sim_info, ~, sim_results] = ...
+                        param_sweep_multi_v3([rate_index ir_index],...
+                        functionPathCell{n_lc,n_b}, sweep_options{:},...
+                        'equilibrium_flag', eq_flag, 'cw',cw);
+
+%     if ds_flag
+%         sim_results = sim_results_short;
+%     end            
+    suffix = '_neq';   
+    if eq_flag
+        suffix = '_eq';   
+    end
+    suffix = [suffix '_w' sprintf('%04d',cw)];
+    % save
+    disp('saving...')
+    saveName = saveNameCell{n_lc,n_b};
+    save([writePath 'sweep_info_' saveName suffix '.mat'],'sim_info')
+    save([writePath 'sweep_results_' saveName suffix '.mat'],'sim_results', '-v7.3')
+
+    toc;    
+
+end    
+
