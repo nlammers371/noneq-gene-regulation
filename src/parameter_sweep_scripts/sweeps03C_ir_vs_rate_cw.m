@@ -54,9 +54,12 @@ cw_index = find(strcmp(metric_names,'CW'));
 ir_index = find(strcmp(metric_names,'IR'));        
 
 % generate option vectors
-bs_vec = [2 3 4 5 1 1 1];
-lc_vec = [1 1 1 1 2 3 4];
-eq_vec = [1 1 1 1 0 0 0];
+% bs_vec = [1 2 3 4 5 1 1 1 1];
+% lc_vec = [1 1 1 1 1 1 2 3 4];
+% eq_vec = [1 1 1 1 1 0 0 0 0];
+bs_vec = [5];
+lc_vec = [1];
+eq_vec = [1];
 cw_vec = [10 1e2 1e3];
 bs_vec_long = repelem(bs_vec,length(cw_vec));
 lc_vec_long = repelem(lc_vec,length(cw_vec));

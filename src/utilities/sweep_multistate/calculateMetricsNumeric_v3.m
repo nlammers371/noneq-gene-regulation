@@ -21,7 +21,6 @@ if ~isempty(param_array)
     phi_index = find(strcmp(metric_names,'Phi'));
     cw_index = find(strcmp(metric_names,'CW'));
     tau_index = strcmp(metric_names,'TauCycle'); 
-    sharpness_index = strcmp(metric_names,'TauCycle'); 
     precision_index = strcmp(metric_names,'Precision'); 
     sharpness_index = strcmp(metric_names,'Sharpness'); 
     if ~simInfo.equilibrium_flag
@@ -128,7 +127,10 @@ if ~isempty(param_array)
                 state_probs_c0(i,:) = calculate_ss_num(Q_num_c0,numerical_precision);
                 state_probs_c1(i,:) = calculate_ss_num(Q_num_c1,numerical_precision);
                 
-                low_flag = log10(nanmin(state_probs_cs(i,:))) <= -numerical_precision;
+%                 low_flag = false;%log10(nanmin(state_probs_cs(i,:))) <= -numerical_precision;
+%                 if all(ismember(simInfo.edge_metric_indices,[precision_index, sharpness_index]))
+%                     low_flag = false;%log10(nanmin(state_probs_cs(i,:))) <= -numerical_precision;
+%                 end
                 % calculate center values for variance, entropy rate, and Tau
                 try % NL: this calculation requres a matrix inversion. Will lead to error if matrix is near singular
                     Z_num_cs = calculate_Z_matrix(Q_num_cs,state_probs_cs(i,:),numerical_precision);
