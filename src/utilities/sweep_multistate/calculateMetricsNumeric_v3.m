@@ -23,6 +23,7 @@ if ~isempty(param_array)
     tau_index = strcmp(metric_names,'TauCycle'); 
     sharpness_index = strcmp(metric_names,'TauCycle'); 
     precision_index = strcmp(metric_names,'Precision'); 
+    sharpness_index = strcmp(metric_names,'Sharpness'); 
     if ~simInfo.equilibrium_flag
         if any(ismember(simInfo.edge_metric_indices,[phi_index]))
             metric_lb_vec(phi_index) = 1e-3;        
@@ -193,7 +194,7 @@ if ~isempty(param_array)
     ProductionRate = sum(state_probs_cs(:,activeStateFilter),2);
     
     % calculate sharpness 3 different ways and compare to check for
-    % numerical precision errors in SS vectors
+    % numerical precision errors in SS vectors    
     dp10 = ProductionRate1-ProductionRate0;
     SharpnessRaw01 = dp10./(simInfo.cr1-simInfo.cr0);   
     SharpnessRawS0 = (ProductionRate-ProductionRate0)./(simInfo.crs-simInfo.cr0);   
@@ -219,7 +220,9 @@ if ~isempty(param_array)
     % NL: 0.1 threshold is ad hoc, but seems to do a good job
     % picking out erroneous cases arising from precision issues
     qc_flags = abs(sig./mu) <= 0.1 & ~any(isnan(s_array),2) & all(real(s_array)>=0,2);%all(round(real(Sharpness),1) == round(real([Sharpness SharpnessS0 Sharpness1S]),1),2);
-    use_flags = use_flags & qc_flags;
+    if all(ismember(simInfo.edge_metric_indices,[precision_index, sharpness_index]))
+        use_flags = use_flags & qc_flags; % designed specfically to deal with artifactis in S vs P sweeps
+    end
     
 %     qc_flag_alt = round(SharpnessRaw01,4) == round(mean(abs([SharpnessRawS0 SharpnessRaw1S]),2),4)&all(sign(SharpnessRaw01)==sign([SharpnessRawS0 SharpnessRaw1S]),2);
     Variance = VarianceRaw ./ b_factor.^2;
@@ -230,7 +233,9 @@ if ~isempty(param_array)
     sig_var = nanstd(real(v_array),[],2); % note that we screen separately for imaginary components
     mu_var = nanmin(real(v_array),[],2);
     qc_flags_var = sig_var./mu_var <= .4 & all(v_array>0,2);
-    use_flags = use_flags & qc_flags_var;
+    if all(ismember(simInfo.edge_metric_indices,[precision_index, sharpness_index]))
+        use_flags = use_flags & qc_flags_var;
+    end
     % calculate "wrong" sharpness
 %     CWSharpness = NaN(size(ProductionRate));%(ProductionRate1W-ProductionRate0W)./(cw1-cw0) ./ (pm.*(1-pm));
     

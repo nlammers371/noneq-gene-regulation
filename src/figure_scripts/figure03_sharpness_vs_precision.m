@@ -134,7 +134,9 @@ xlim([0 2.2])
 saveas(sharp_v_prec_4_sc,[FigPath 'sharp_vs_prec4_sc.png'])
 % % saveas(sharp_v_prec_4_sc,[FigPath 'sharp_vs_prec4_sc.pdf'])    
 
-%% Plot illustrative titration curves
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Plot illustrative titration curves
 % identify  systems near optimal sharpness for each gene circuit that
 % attain maximum near HM
 rate_bounds = [0.495 0.505];
@@ -256,7 +258,7 @@ saveas(induction_plots_sym,[FigPath 'motif_induction_4state.pdf'])
 %% %%%%%%%%%%%%%%% Examine impact of adding binding sites %%%%%%%%%%%%%%%%%
 % get metric names for numeric sweeps
 [~,~,metric_names_num] = calculateMetricsNumeric_v3([]);
-
+n_ir = 100;
 ir_index_num = find(strcmp(metric_names_num,'IR'));
 sharpness_index_num = find(strcmp(metric_names_num,'Sharpness'));
 precision_index_num = find(strcmp(metric_names_num,'Precision'));
@@ -269,15 +271,31 @@ tau_index_num = find(strcmp(metric_names_num,'TauCycle'));
 multi_bs_sweep_files = dir([DataPath 'sweep_results*g01*neq*']);
 multi_bs_info_files = dir([DataPath 'sweep_info*g01*neq*']);
 
+multi_bs_sweep_files_eq = dir([DataPath 'sweep_results*g01_cw0_eq*']);
+multi_bs_info_files_eq = dir([DataPath 'sweep_info*g01_cw0_eq*']);
+
 % load
 master_struct_multi_bs = struct;
 for f = 1:length(multi_bs_sweep_files)
   
     load([DataPath multi_bs_sweep_files(f).name])
     load([DataPath multi_bs_info_files(f).name])
-    
+            
     master_struct_multi_bs(f).sweep_results = sim_results;
     master_struct_multi_bs(f).sweep_info = sim_info;
+    
+    clear sim_info
+    clear sim_results
+    
+    load([DataPath multi_bs_sweep_files_eq(f).name])
+    load([DataPath multi_bs_info_files_eq(f).name])
+    
+    master_struct_multi_bs(f).sweep_results_eq = sim_results;
+    master_struct_multi_bs(f).sweep_info_eq = sim_info;
+    
+    clear sim_info
+    clear sim_results
+    
 end    
 
 % calculate sharpness vs precision boundaries 
@@ -296,7 +314,7 @@ for i = 1:length(master_struct_multi_bs)
     precision_vec = metric_array(:,precision_index_num).^2;
     ir_vec = metric_array(:,ir_index_num);
 
-    if i > 4
+    if i > 2
         ft2 = sqrt(sharpness_vec)<=s_min;% NL: screen out a handful of outliers with very small sharpness and anamaolously high precision
     else
         ft2 = false(size(sharpness_vec));
@@ -304,7 +322,7 @@ for i = 1:length(master_struct_multi_bs)
     options = find(~ft2);
     
     % identify boundary points
-    b_points = boundary(sqrt(sharpness_vec(options)),sqrt(precision_vec(options)),0.9);
+    b_points = boundary(sqrt(sharpness_vec(options)),sqrt(precision_vec(options)),0.95);
     
     % store
     master_struct_multi_bs(i).bound_points = options(b_points);
@@ -328,7 +346,7 @@ for i = 1:length(master_struct_multi_bs)
     master_struct_multi_bs(i).prec_max = nanmax(precision_vec(options));
 end
 
-
+%%
 close all
 
 % set plot parameters
@@ -435,7 +453,7 @@ saveas(sharp_vs_prec_bs,[FigPath 'sharp_vs_prec_norm_bs.pdf'])
 % Plot sharpness and precision as a function of nbs
 
 xlbs = [0.5 5.5];
-
+%%
 close all
 sharp_bs = figure;
 
@@ -443,15 +461,15 @@ hold on
 
 % make plots
 n_plot = 500;
-plot(linspace(xlbs(1), xlbs(2)),2*linspace(xlbs(1), xlbs(2)),':','Color','k','LineWidth',2)
+
 for i = 1:length(master_struct_multi_bs)
-    s_vec = master_struct_multi_bs(i).sweep_results.metric_array(:,sharpness_index_num);
+    s_vec = master_struct_multi_bs(i).sweep_results_eq.metric_array(:,sharpness_index_num);
     s_options = find(s_vec>=0);
     plot_ids = randsample(s_options,n_plot,true,sqrt(s_vec));
     g_temp = i + normrnd(0,0.025,n_plot,1);
     scatter(g_temp,s_vec(s_options(plot_ids)),25,'MarkerFaceColor',cmap(i,:),'MarkerEdgeColor','k','MarkerFaceAlpha',0.2,'MarkerEdgeAlpha',0.1);
 end
-
+plot(linspace(xlbs(1), xlbs(2)),linspace(xlbs(1), xlbs(2)),':','Color','k','LineWidth',2)
 ylabel('normalized sharpness (S)')
 % ylim([2 5])
 xlim(xlbs)
@@ -459,7 +477,7 @@ xlabel('number of binding sites');
 
 grid on
 box on
-set(gca,'xtick',1:4)
+set(gca,'xtick',2:5)
 set(gca,'FontSize',14)
 set(gca,'Color',[228,221,209]/255) 
 
@@ -470,75 +488,75 @@ ax.XAxis(1).Color = 'k';
 sharp_bs.InvertHardcopy = 'off';
 set(gcf,'color','w');
 
-saveas(sharp_bs,[FigPath 'sharp_vs_bs_sc.png'])
-saveas(sharp_bs,[FigPath 'sharp_vs_bs_sc.pdf']) 
-
-% note that I'm using low Phi as a proxy for eq performance
-s_max_vec = sqrt([master_struct_multi_bs.sharp_max]);
-p_max_vec = sqrt([master_struct_multi_bs.prec_max]);
-bs_pd_vec = 1:5;
-xl = [0.5 5.5];
-close all
-sharp_bs = figure;
-
-hold on
-
-% make plots
-plot(linspace(xl(1),xl(2)),2*linspace(xl(1),xl(2)),'--','Color','k','LineWidth',2)
-scatter(bs_pd_vec,s_max_vec,75,'MarkerFaceColor',cmap_gre(4,:),'MarkerEdgeColor','k');
-
-ylabel('maximum achivable sharpness (S)')
-% ylim([2 10])
-
-xlabel('number of binding sites');
-
-grid on
-box on
-
-set(gca,'FontSize',14)
-set(gca,'Color',[228,221,209]/255) 
-
-ax = gca;
-ax.XAxis(1).Color = 'k';
-ax.YAxis(1).Color = 'k';
-xlim(xl);
-sharp_bs.InvertHardcopy = 'off';
-set(gcf,'color','w');
-
-saveas(sharp_bs,[FigPath 'sharp_vs_bs.png'])
-saveas(sharp_bs,[FigPath 'sharp_vs_bs.pdf']) 
-
+saveas(sharp_bs,[FigPath 'sharp_vs_bs_sc_eq.png'])
+saveas(sharp_bs,[FigPath 'sharp_vs_bs_sc_eq.pdf']) 
 %%
-prec_bs = figure;
+% % note that I'm using low Phi as a proxy for eq performance
+% s_max_vec = sqrt([master_struct_multi_bs.sharp_max]);
+% p_max_vec = sqrt([master_struct_multi_bs.prec_max]);
+% bs_pd_vec = 1:5;
+% xl = [0.5 5.5];
+% close all
+% sharp_bs = figure;
+% 
+% hold on
+% 
+% % make plots
+% plot(linspace(xl(1),xl(2)),2*linspace(xl(1),xl(2)),'--','Color','k','LineWidth',2)
+% scatter(bs_pd_vec,s_max_vec,75,'MarkerFaceColor',cmap_gre(4,:),'MarkerEdgeColor','k');
+% 
+% ylabel('maximum achivable sharpness (S)')
+% % ylim([2 10])
+% 
+% xlabel('number of binding sites');
+% 
+% grid on
+% box on
+% 
+% set(gca,'FontSize',14)
+% set(gca,'Color',[228,221,209]/255) 
+% 
+% ax = gca;
+% ax.XAxis(1).Color = 'k';
+% ax.YAxis(1).Color = 'k';
+% xlim(xl);
+% sharp_bs.InvertHardcopy = 'off';
+% set(gcf,'color','w');
+% 
+% saveas(sharp_bs,[FigPath 'sharp_vs_bs.png'])
+% saveas(sharp_bs,[FigPath 'sharp_vs_bs.pdf']) 
+% 
+% 
+% prec_bs = figure;
+% 
+% hold on
+% 
+% plot(bs_pd_vec,p_max_vec,'-','Color','k','LineWidth',2)
+% scatter(bs_pd_vec,p_max_vec,75,'s','MarkerFaceColor',cmap_rd(4,:),'MarkerEdgeColor','k');
+% 
+% ylabel('maximum achivable precision (P)')
+% ylim([0.5 2])
+% 
+% xlabel('number of binding sites');
+% 
+% grid on
+% box on
+% 
+% set(gca,'FontSize',14)
+% set(gca,'Color',[228,221,209]/255) 
+% 
+% ax = gca;
+% ax.YAxis(1).Color = 'k';
+% ax.XAxis(1).Color = 'k';
+% % ylim([0 0.4])
+% sharp_bs.InvertHardcopy = 'off';
+% set(gcf,'color','w');
+% xlim(xl)
+% saveas(sharp_bs,[FigPath 'prec_vs_bs.png'])
+% saveas(sharp_bs,[FigPath 'prec_vs_bs.pdf']) 
+% 
 
-hold on
-
-plot(bs_pd_vec,p_max_vec,'-','Color','k','LineWidth',2)
-scatter(bs_pd_vec,p_max_vec,75,'s','MarkerFaceColor',cmap_rd(4,:),'MarkerEdgeColor','k');
-
-ylabel('maximum achivable precision (P)')
-ylim([0.5 2])
-
-xlabel('number of binding sites');
-
-grid on
-box on
-
-set(gca,'FontSize',14)
-set(gca,'Color',[228,221,209]/255) 
-
-ax = gca;
-ax.YAxis(1).Color = 'k';
-ax.XAxis(1).Color = 'k';
-% ylim([0 0.4])
-sharp_bs.InvertHardcopy = 'off';
-set(gcf,'color','w');
-xlim(xl)
-saveas(sharp_bs,[FigPath 'prec_vs_bs.png'])
-saveas(sharp_bs,[FigPath 'prec_vs_bs.pdf']) 
-
-
-%% Plot illustrative induction curves for 
+% Plot illustrative induction curves for 
 DataPath2 = [DropboxFolder  'SweepOutput\sweeps02B_sharpness_vs_rate' filesep];
 
 multi_bs_rate_files = dir([DataPath2 'sweep_results*g01*neq*']);
@@ -638,7 +656,7 @@ multi_g_info_files = dir([DataPath 'sweep_info_s01_ns00_g0*neq*']);
   
 % load
 master_struct_multi_g = struct;
-for f = 1:length(multi_g_sweep_files)
+for f = 1:length(multi_g_sweep_files)-1
   
     load([DataPath multi_g_sweep_files(f).name])
     load([DataPath multi_g_info_files(f).name])
@@ -652,7 +670,7 @@ end
 % under-represented regions
 multi_g_sweep_files_supp = dir([DataPathSupp 'sweep_results_s01_ns00_g0*']);
 multi_g_info_files_supp = dir([DataPathSupp 'sweep_info_s01_ns00_g0*']);
-for f = 1:length(multi_g_sweep_files)
+for f = 1:length(multi_g_sweep_files)-1
   
     load([DataPathSupp multi_g_sweep_files_supp(f).name])
     load([DataPathSupp multi_g_sweep_files_supp(f).name])
@@ -668,7 +686,7 @@ end
 % ir_max_vec = [0.015 0.03 0.045 0.06 0.075];
 rng(321);
 
-for i = 1:length(master_struct_multi_g)-1
+for i = 1:length(master_struct_multi_g)
     % extract vectors
     metric_array = master_struct_multi_g(i).sweep_results.metric_array; 
     metric_array_supp = master_struct_multi_g(i).sweep_results_supp.metric_array; 
@@ -707,13 +725,13 @@ for i = 1:length(master_struct_multi_g)-1
     master_struct_multi_g(i).prec_max = nanmax(precision_vec(options));
     
 end
-
+%%
 % make figure        
 close all
 sharp_vs_prec_g = figure;
 hold on
 % plot area vectors
-for i = length(master_struct_multi_g)-1:-1:1                      
+for i = length(master_struct_multi_g):-1:1                      
     % downsample vectors    
     s_vec = sqrt(master_struct_multi_g(i).sharpness_boundary);
     p_vec = sqrt(master_struct_multi_g(i).precision_boundary);
@@ -742,9 +760,9 @@ ax.XAxis(1).Color = 'k';
 sharp_vs_prec_g.InvertHardcopy = 'off';
 set(gcf,'color','w');
 ylim([0 1.6])
-
-saveas(sharp_vs_prec_g,[FigPath 'sharp_vs_prec_g.png'])
-saveas(sharp_vs_prec_g,[FigPath 'sharp_vs_prec_g.pdf']) 
+xlim([0 5.5])
+saveas(sharp_vs_prec_g,[FigPath 'sharp_vs_prec_lc.png'])
+saveas(sharp_vs_prec_g,[FigPath 'sharp_vs_prec_lc.pdf']) 
 
 
 % make norm figure        
@@ -755,7 +773,7 @@ eq_p_vec = sqrt(1/2);
 sharp_vs_prec_g = figure;
 hold on
 % plot area vectors
-for i = length(master_struct_multi_g)-1:-1:1                    
+for i = length(master_struct_multi_g):-1:1                    
     % downsample vectors    
     s_vec = sqrt(master_struct_multi_g(i).sharpness_boundary)/eq_s_vec;
     p_vec = sqrt(master_struct_multi_g(i).precision_boundary)/eq_p_vec;
@@ -769,7 +787,7 @@ for i = length(master_struct_multi_g)-1:-1:1
                                         1,'EdgeColor',brighten(cmap_pu(i+2,:),-0.5),'LineWidth',3);    
 end
 
-for i = length(master_struct_multi_g)-1:-1:1  
+for i = length(master_struct_multi_g):-1:1  
     s_vec = sqrt(master_struct_multi_g(i).sharp_ir)/eq_s_vec;
     p_vec = sqrt(master_struct_multi_g(i).prec_ir)/eq_p_vec;
     scatter(s_vec,p_vec,markerSize,'MarkerEdgeAlpha',1,'MarkerEdgeColor','k','MarkerFaceAlpha',0.75,...
@@ -788,15 +806,16 @@ ax.XAxis(1).Color = 'k';
 
 sharp_vs_prec_g.InvertHardcopy = 'off';
 set(gcf,'color','w');
-
-saveas(sharp_vs_prec_g,[FigPath 'sharp_vs_prec_norm_g.png'])
-saveas(sharp_vs_prec_g,[FigPath 'sharp_vs_prec_norm_g.pdf']) 
+xlim([0 5.5])
+saveas(sharp_vs_prec_g,[FigPath 'sharp_vs_prec_norm_lc.png'])
+saveas(sharp_vs_prec_g,[FigPath 'sharp_vs_prec_norm_lc.pdf']) 
 
 % Plot max sharpness and precision
 % note that I'm using low Phi as a proxy for eq performance
 
-xlg = [0.5 4.5];
 
+%%
+xlg = [1.5 5.5];
 close all
 sharp_g = figure;
 
@@ -804,23 +823,23 @@ hold on
 
 % make plots
 n_plot = 500;
-plot(linspace(xlg(1), xlg(2)),1+linspace(xlg(1), xlg(2)),':','Color','k','LineWidth',2)
-for i = 1:length(master_struct_multi_g)-1
+plot(linspace(xlg(1), xlg(2)),linspace(xlg(1), xlg(2)),':','Color','k','LineWidth',2)
+for i = 1:length(master_struct_multi_g)
     s_vec = master_struct_multi_g(i).sweep_results.metric_array(:,sharpness_index_num);
     s_options = find(s_vec>=0);
     plot_ids = randsample(s_options,n_plot,true,sqrt(s_vec));
-    g_temp = i + normrnd(0,0.025,n_plot,1);
+    g_temp = 1 + i + normrnd(0,0.025,n_plot,1);
     scatter(g_temp,s_vec(s_options(plot_ids)),25,'MarkerFaceColor',cmap_pu(i*2,:),'MarkerEdgeColor','k','MarkerFaceAlpha',0.2,'MarkerEdgeAlpha',0.1);
 end
 
 ylabel('sharpness (S)')
 % ylim([2 5])
 xlim(xlg)
-xlabel('number of locus conformations');
+xlabel('number of locus conformations (N_{LC})');
 
 grid on
 box on
-set(gca,'xtick',1:4)
+set(gca,'xtick',2:5)
 set(gca,'FontSize',14)
 set(gca,'Color',[228,221,209]/255) 
 
@@ -831,76 +850,76 @@ ax.XAxis(1).Color = 'k';
 sharp_g.InvertHardcopy = 'off';
 set(gcf,'color','w');
 
-saveas(sharp_g,[FigPath 'sharp_vs_g_sc.png'])
-saveas(sharp_g,[FigPath 'sharp_vs_g_sc.pdf']) 
-
+saveas(sharp_g,[FigPath 'sharp_vs_lc_sc.png'])
+saveas(sharp_g,[FigPath 'sharp_vs_lc_sc.pdf']) 
+%%
 % note that I'm using low Phi as a proxy for eq performance
 s_max_vec_g = sqrt([master_struct_multi_g(1:4).sharp_max]);
 p_max_vec_g = sqrt([master_struct_multi_g(1:4).prec_max]);
-g_vec = 1:4;
-xlg = [0.5 4.5];
+g_vec = 2:5;
+xlg = [1.5 5.5];
 
-close all
-sharp_g = figure;
-
-hold on
-
-% make plots
-plot(linspace(xlg(1), xlg(2)),1+linspace(xlg(1), xlg(2)),'.','Color','k','LineWidth',2)
-scatter(g_vec,s_max_vec_g,75,'MarkerFaceColor',cmap_gre(4,:),'MarkerEdgeColor','k');
-
-ylabel('maximum  sharpness (S)')
-% ylim([2 5])
-xlim(xlg)
-xlabel('number of locus conformations');
-
-grid on
-box on
-set(gca,'xtick',1:4)
-set(gca,'FontSize',14)
-set(gca,'Color',[228,221,209]/255) 
-
-ax = gca;
-ax.YAxis(1).Color = 'k';
-ax.XAxis(1).Color = 'k';
-% ylim([0 0.4])
-sharp_g.InvertHardcopy = 'off';
-set(gcf,'color','w');
-
-saveas(sharp_g,[FigPath 'sharp_vs_g.png'])
-saveas(sharp_g,[FigPath 'sharp_vs_g.pdf']) 
-
-%
-prec_g = figure;
-
-hold on
-
-% make plots
-
-plot(g_vec,p_max_vec_g,'-','Color','k','LineWidth',2)
-scatter(g_vec,p_max_vec_g,75,'s','MarkerFaceColor',cmap_rd(4,:),'MarkerEdgeColor','k');
-
-ylabel('maximum precision (P)')
-ylim([.75 1.4])
-xlim(xlg)
-
-xlabel('number of general TF reactions');
-
-grid on
-box on
-set(gca,'xtick',1:4)
-set(gca,'FontSize',14)
-set(gca,'Color',[228,221,209]/255) 
-
-ax = gca;
-ax.YAxis(1).Color = 'k';
-ax.XAxis(1).Color = 'k';
-% ylim([0 0.4])
-prec_g.InvertHardcopy = 'off';
-set(gcf,'color','w');
-
-saveas(prec_g,[FigPath 'prec_vs_g.png'])
-saveas(prec_g,[FigPath 'prec_vs_g.pdf']) 
+% close all
+% sharp_g = figure;
+% 
+% hold on
+% 
+% %% make plots
+% plot(linspace(xlg(1), xlg(2)),linspace(xlg(1), xlg(2)),'.','Color','k','LineWidth',2)
+% scatter(g_vec,s_max_vec_g,75,'MarkerFaceColor',cmap_gre(4,:),'MarkerEdgeColor','k');
+% 
+% ylabel('maximum  sharpness (S)')
+% % ylim([2 5])
+% xlim(xlg)
+% xlabel('number of locus conformations');
+% 
+% grid on
+% box on
+% set(gca,'xtick',2:5)
+% set(gca,'FontSize',14)
+% set(gca,'Color',[228,221,209]/255) 
+% 
+% ax = gca;
+% ax.YAxis(1).Color = 'k';
+% ax.XAxis(1).Color = 'k';
+% % ylim([0 0.4])
+% sharp_g.InvertHardcopy = 'off';
+% set(gcf,'color','w');
+% 
+% saveas(sharp_g,[FigPath 'sharp_vs_g.png'])
+% saveas(sharp_g,[FigPath 'sharp_vs_g.pdf']) 
+% 
+% 
+% prec_g = figure;
+% 
+% hold on
+% 
+% % make plots
+% 
+% plot(g_vec,p_max_vec_g,'-','Color','k','LineWidth',2)
+% scatter(g_vec,p_max_vec_g,75,'s','MarkerFaceColor',cmap_rd(4,:),'MarkerEdgeColor','k');
+% 
+% ylabel('maximum precision (P)')
+% ylim([.75 1.4])
+% xlim(xlg)
+% 
+% xlabel('number of general TF reactions');
+% 
+% grid on
+% box on
+% set(gca,'xtick',2:5)
+% set(gca,'FontSize',14)
+% set(gca,'Color',[228,221,209]/255) 
+% 
+% ax = gca;
+% ax.YAxis(1).Color = 'k';
+% ax.XAxis(1).Color = 'k';
+% % ylim([0 0.4])
+% prec_g.InvertHardcopy = 'off';
+% set(gcf,'color','w');
+% 
+% saveas(prec_g,[FigPath 'prec_vs_g.png'])
+% saveas(prec_g,[FigPath 'prec_vs_g.pdf']) 
 
 
 %% Plot illustrative induction curves for different Ng
@@ -973,7 +992,7 @@ sharpness_plots_g = figure;
 hold on
 % plot area vectors
 p = [];
-for i = 1:length(master_struct_multi_g)-1                     
+for i = 1:length(master_struct_multi_g)                    
     % downsample vectors    
     p(i) = plot(c_vec,induction_array_g(:,i),'Color',brighten(cmap_pu(2+i,:),-0.25),'LineWidth',3);
    
@@ -1001,92 +1020,92 @@ set(gcf,'color','w');
 saveas(sharpness_plots_g,[FigPath 'sharp_curves_g.png'])
 saveas(sharpness_plots_g,[FigPath 'sharp_curves_g.pdf']) 
 
-%%
-DataPath3 = [DropboxFolder  'SweepOutput\sweeps02_sharpness_vs_precision' filesep];
-
-multi_bs_rate_files = dir([DataPath3 'sweep_results*g01*_eq*']);
-multi_bs_info_files = dir([DataPath3 'sweep_info*g01*_eq*']);
-nb_ind = 3;
-% identify  systems near optimal sharpness for each gene circuit that
-% attain maximum near HM
-rng(123);
-
-% read file into working space
-clear sim_results
-clear sim_info
-load([DataPath3 multi_bs_rate_files(nb_ind).name])
-load([DataPath3 multi_bs_info_files(nb_ind).name])
-master_struct_multi_bs(nb_ind).sweep_results_rate = sim_results;
-
-s_vec = sim_results.metric_array(:,sharpness_index_num);
-r_vec = sim_results.metric_array(:,rate_index_num);
-r_bounds = [0.49 0.51];
-
-options = find(r_vec>=r_bounds(1) & r_vec<=r_bounds(2));
-[~,sharp_i] = nanmax(s_vec(options));
-sharp_rates_bs = sim_results.rate_array(options(sharp_i),:);        
-
-% get predicted induction curve
-% add correct function to working path
-functionPath = sim_info.functionPath;
-slashes = strfind(functionPath,'\');
-simName = functionPath(slashes(end-1)+1:slashes(end)-1);
-rmpath(genpath('../utilities/metricFunctions/'));
-addpath(genpath(['../utilities/metricFunctions/numeric/' simName]));
-
-% extract rates
-param_vec = sharp_rates_bs;
-bs_pd_vec = NaN(size(c_vec));
-
-for c = 1:length(c_vec)
-    param_temp = param_vec;
-    param_temp(1) = c_vec(c);
-    valCellCS = mat2cell(param_temp,size(param_temp,1),ones(1,size(param_temp,2)));   
-
-    Q_num = RSymFun(valCellCS{:});
-
-    ss_short = calculate_ss_num(Q_num,numerical_precision);  
-    bs_pd_vec(c) = sum(ss_short(sim_info.activeStateFilter));
-end
-
-%% Make figure comparing multi-bs and multi-step
-close all
-
-na_ind = 2;
-
-
-% Make plot 
-sharpness_plots_na_vs_nb = figure;
-hold on
-% plot area vectors
-p = [];
-              
-% downsample vectors    
-p_na = plot(c_vec,induction_array_g(:,na_ind),'Color',cmap_pu(2+na_ind,:),'LineWidth',3);
-p_nb = scatter(c_vec(1:3:end),bs_pd_vec(1:3:end),'o','MarkerFaceColor',cmap(nb_ind,:),'MarkerEdgeColor','k');
-
-
-% plot verticle lines denoting target concentrations
-% plot(repelem(c0,100),linspace(0,1,100),':k','LineWidth',1.5)
-% plot(repelem(c1,100),linspace(0,1,100),':k','LineWidth',1.5)
-
-legend([p_na p_nb],'N_a= 3 (non-eq.)','N_b= 3 (eq.)','Location','northwest');
-xlim([0.1 10])
-
-set(gca,'xscale','log')
-xlabel('activator concentration (c)');
-ylabel('transcription rate (r)')
-
-% grid on
-box on
-set(gca,'FontSize',24)
-set(gca,'Color',[228,221,209]/255) 
-ax = gca;
-ax.YAxis(1).Color = 'k';
-ax.XAxis(1).Color = 'k';
-ax.LineWidth = 3;
-sharpness_plots_na_vs_nb.InvertHardcopy = 'off';
-set(gcf,'color','w');
+% %%
+% DataPath3 = [DropboxFolder  'SweepOutput\sweeps02_sharpness_vs_precision' filesep];
 % 
-saveas(sharpness_plots_na_vs_nb,[FigPath 'na_vs_nb.png'])
-saveas(sharpness_plots_na_vs_nb,[FigPath 'na_vs_nb.pdf']) 
+% multi_bs_rate_files = dir([DataPath3 'sweep_results*g01*_eq*']);
+% multi_bs_info_files = dir([DataPath3 'sweep_info*g01*_eq*']);
+% nb_ind = 3;
+% % identify  systems near optimal sharpness for each gene circuit that
+% % attain maximum near HM
+% rng(123);
+% 
+% % read file into working space
+% clear sim_results
+% clear sim_info
+% load([DataPath3 multi_bs_rate_files(nb_ind).name])
+% load([DataPath3 multi_bs_info_files(nb_ind).name])
+% master_struct_multi_bs(nb_ind).sweep_results_rate = sim_results;
+% 
+% s_vec = sim_results.metric_array(:,sharpness_index_num);
+% r_vec = sim_results.metric_array(:,rate_index_num);
+% r_bounds = [0.49 0.51];
+% 
+% options = find(r_vec>=r_bounds(1) & r_vec<=r_bounds(2));
+% [~,sharp_i] = nanmax(s_vec(options));
+% sharp_rates_bs = sim_results.rate_array(options(sharp_i),:);        
+% 
+% % get predicted induction curve
+% % add correct function to working path
+% functionPath = sim_info.functionPath;
+% slashes = strfind(functionPath,'\');
+% simName = functionPath(slashes(end-1)+1:slashes(end)-1);
+% rmpath(genpath('../utilities/metricFunctions/'));
+% addpath(genpath(['../utilities/metricFunctions/numeric/' simName]));
+% 
+% % extract rates
+% param_vec = sharp_rates_bs;
+% bs_pd_vec = NaN(size(c_vec));
+% 
+% for c = 1:length(c_vec)
+%     param_temp = param_vec;
+%     param_temp(1) = c_vec(c);
+%     valCellCS = mat2cell(param_temp,size(param_temp,1),ones(1,size(param_temp,2)));   
+% 
+%     Q_num = RSymFun(valCellCS{:});
+% 
+%     ss_short = calculate_ss_num(Q_num,numerical_precision);  
+%     bs_pd_vec(c) = sum(ss_short(sim_info.activeStateFilter));
+% end
+% 
+% %% Make figure comparing multi-bs and multi-step
+% close all
+% 
+% na_ind = 2;
+% 
+% 
+% % Make plot 
+% sharpness_plots_na_vs_nb = figure;
+% hold on
+% % plot area vectors
+% p = [];
+%               
+% % downsample vectors    
+% p_na = plot(c_vec,induction_array_g(:,na_ind),'Color',cmap_pu(2+na_ind,:),'LineWidth',3);
+% p_nb = scatter(c_vec(1:3:end),bs_pd_vec(1:3:end),'o','MarkerFaceColor',cmap(nb_ind,:),'MarkerEdgeColor','k');
+% 
+% 
+% % plot verticle lines denoting target concentrations
+% % plot(repelem(c0,100),linspace(0,1,100),':k','LineWidth',1.5)
+% % plot(repelem(c1,100),linspace(0,1,100),':k','LineWidth',1.5)
+% 
+% legend([p_na p_nb],'N_a= 3 (non-eq.)','N_b= 3 (eq.)','Location','northwest');
+% xlim([0.1 10])
+% 
+% set(gca,'xscale','log')
+% xlabel('activator concentration (c)');
+% ylabel('transcription rate (r)')
+% 
+% % grid on
+% box on
+% set(gca,'FontSize',24)
+% set(gca,'Color',[228,221,209]/255) 
+% ax = gca;
+% ax.YAxis(1).Color = 'k';
+% ax.XAxis(1).Color = 'k';
+% ax.LineWidth = 3;
+% sharpness_plots_na_vs_nb.InvertHardcopy = 'off';
+% set(gcf,'color','w');
+% % 
+% saveas(sharpness_plots_na_vs_nb,[FigPath 'na_vs_nb.png'])
+% saveas(sharpness_plots_na_vs_nb,[FigPath 'na_vs_nb.pdf']) 

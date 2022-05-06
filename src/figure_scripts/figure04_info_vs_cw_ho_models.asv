@@ -60,8 +60,8 @@ cw_index = sort([cw_index log10(dt_cw_vec(end))]);
 multi_bs_sweep_files_eq = dir([DataPath 'sweep_results*g01_cw1_eq*']);
 multi_bs_info_files_eq = dir([DataPath 'sweep_info*g01_cw1_eq*']);
 
-multi_bs_sweep_files_neq = dir([DataPath 'sweep_results*g01_cw1_neq*']);
-multi_bs_info_files_neq = dir([DataPath 'sweep_info*g01_cw1_neq*']);
+multi_bs_sweep_files_neq = dir([DataPath 'sweep_results*g01_cw1.mat']);
+multi_bs_info_files_neq = dir([DataPath 'sweep_info*g01_cw1.mat']);
 
 % load
 master_struct_multi_bs = struct;

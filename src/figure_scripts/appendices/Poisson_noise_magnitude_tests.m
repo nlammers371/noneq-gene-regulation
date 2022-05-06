@@ -17,8 +17,8 @@ PolII_initiation_rate = 20; % Pol II per minute (based off of estimates for eve 
 % The key is to realize that the relative contribution from poisson remains
 % constant with a, while bursting component increases linearly with tau_b
 
-noise_prefactor = 2; % 4 state system at equilibrium
-burst_time_vec = 1:(24*60); % burst cycle times (in minutes)
+noise_prefactor = 1; % 4 state system at equilibrium
+burst_time_vec = 1:1:(6*60); % burst cycle times (in minutes)
 a_vec = linspace(0.02,0.98)';
 
 poisson_noise_array = repmat(a_vec.*PolII_initiation_rate,1,length(burst_time_vec));
@@ -26,7 +26,7 @@ burst_noise_array = PolII_initiation_rate^2*(a_vec.*(1-a_vec)).^2 .* burst_time_
 rel_array = poisson_noise_array./(poisson_noise_array+burst_noise_array);
 
 poisson_noise_fig = figure;
-cmap = flipud(brewermap([],'YlGnBu'));
+cmap = brewermap([],'YlOrRd');
 colormap(cmap)
 p = pcolor(poisson_noise_array);
 p.EdgeAlpha = 0.05;
@@ -36,13 +36,17 @@ xlabel('burst cycle time (minutes)')
 ylabel('fraction of time in active state (a)')
 
 h = colorbar;
-ylabel(h,'predicted Poisson noise component (\lambda)')
+ylabel(h,'predicted Poisson noise component (\sigma_{mRNA}^2)')
 yt = yticks;
 set(gca,'yticklabels',round(a_vec(yt),2)*100)
+xt = xticks;
+set(gca,'xticklabels',round(burst_time_vec(xt)/5)*5)
+poisson_noise_fig.Renderer='Painters';
+saveas(poisson_noise_fig,[FigPath 'poisson_heatmap.png']);
 saveas(poisson_noise_fig,[FigPath 'poisson_heatmap.pdf']);
 
+% burst noise
 burst_noise_fig = figure;
-cmap = flipud(brewermap([],'YlGnBu'));
 colormap(cmap)
 p = pcolor(burst_noise_array);
 p.EdgeAlpha = 0.05;
@@ -52,13 +56,18 @@ xlabel('burst cycle time (minutes)')
 ylabel('fraction of time in active state (a)')
 
 h = colorbar;
-ylabel(h,'minimum bursting noise component (\sigma^2)')
+ylabel(h,'minimum bursting noise component (\sigma_{burst}^2)')
 yt = yticks;
+xt = xticks;
+set(gca,'xticklabels',round(burst_time_vec(xt)/5)*5)
+burst_noise_fig.Renderer='Painters';
 set(gca,'yticklabels',round(a_vec(yt),2)*100)
+saveas(burst_noise_fig,[FigPath 'burst_noise_heatmap.png']);
 saveas(burst_noise_fig,[FigPath 'burst_noise_heatmap.pdf']);
 
+% relative poisson contribution
 rel_noise_fig = figure;
-cmap = flipud(brewermap([],'YlGnBu'));
+cmap = flipud(brewermap([],'Spectral'));
 colormap(cmap)
 p = pcolor(rel_array);
 p.EdgeAlpha = 0.05;
@@ -66,10 +75,14 @@ p.EdgeAlpha = 0.05;
 set(gca,'Fontsize',14);
 xlabel('burst cycle time (minutes)')
 ylabel('fraction of time in active state (a)')
-caxis([0 0.5])
+caxis([0 1])
 h = colorbar;
-ylabel(h,'maximum poisson contribution (\lambda/(\lambda+\sigma))')
+rel_noise_fig.Renderer='Painters';
+ylabel(h,'\sigma_{burst}^2/(\sigma_{mRNA}+\sigma_{burst})')
 yt = yticks;
+xt = xticks;
+set(gca,'xticklabels',round(burst_time_vec(xt)/5)*5)
 set(gca,'yticklabels',round(a_vec(yt),2)*100)
+saveas(rel_noise_fig,[FigPath 'rel_noise_heatmap.png']);
 saveas(rel_noise_fig,[FigPath 'rel_noise_heatmap.pdf']);
 

@@ -226,8 +226,8 @@ set(gcf,'color','w');
 saveas(eq_bound_bs,[FigPath 'info_vs_bs.png'])
 saveas(eq_bound_bs,[FigPath 'info_vs_bs.pdf']) 
 
-
-%% Plot DT eq bounds as a function of N_b
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Plot DT eq bounds as a function of N_b
 % note that I'm using low Phi as a proxy for eq performance
 
 n_plot = 500;
@@ -305,7 +305,7 @@ for f = 1:length(multi_g_sweep_files)
     master_struct_multi_g(f).sweep_info = sim_info;
 end    
 
-%% calculate upper IR bounds
+% calculate upper IR bounds
 
 % calculate upper IR bounds for each NBS
 phi_bins_g = logspace(-2.5,log10(1e4),201);
@@ -313,11 +313,12 @@ phi_axis_g = phi_bins_g(2:end);
 ir_gen_array = NaN(length(phi_axis_g),length(master_struct_multi_g));
 ir_gen_rates_array = NaN(length(phi_axis_g),length(master_struct_multi_g),size(master_struct_multi_g(end).sweep_results.rate_array,2));
 
-for i = length(master_struct_multi_g)-1:-1:1
+for i = length(master_struct_multi_g):-1:1
     metric_array = master_struct_multi_g(i).sweep_results.metric_array;
     rate_array = master_struct_multi_g(i).sweep_results.rate_array;
     phi_vec = metric_array(:,phi_index_num);
     ir_vec = metric_array(:,ir_index_num);
+    sharp_vec = metric_array(:,sharp_index_num);
     for p = 1:length(phi_bins_g)-1
         phi_filter = phi_vec>phi_bins_g(p) & phi_vec<=phi_bins_g(p+1);
         ir_filtered = ir_vec(phi_filter);
@@ -330,6 +331,7 @@ for i = length(master_struct_multi_g)-1:-1:1
     end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Make figure 
 
 % downsample phi axis
@@ -338,7 +340,7 @@ phi_axis_ds_g = unique([phi_axis_ds_g max(phi_axis_g)]);
 ir_gen_array_sm = NaN(length(phi_axis_ds_g),size(ir_gen_array,2));
 
 % fit upper bounds to each model
-for i = length(master_struct_multi_g)-1:-1:1  
+for i = length(master_struct_multi_g):-1:1  
   
     % fit spline to generate smoothed trend
     ir_bound_raw = ir_gen_array(:,i);            
@@ -389,7 +391,7 @@ end
 
 set(gca,'xscale','log')
 ylim([0 0.06])
-xlim([5e-3 3e3])
+xlim([5e-3 5e3])
 
 % h = colorbar;
 % ylabel(h,'number of binding sites')
@@ -413,7 +415,7 @@ saveas(info_g_fig,[FigPath 'info_vs_phi_g.png'])
 saveas(info_g_fig,[FigPath 'info_vs_phi_g.pdf']) 
 
 
-%% Plot IR neq bounds as a function of N_a
+%% Plot IR neq bounds as a function of N_LC
 % note that I'm using low Phi as a proxy for eq performance
 
 n_plot = 500;
@@ -422,7 +424,7 @@ eq_bound_a = figure;
 hold on
 % make plots
 ir_maxima = [];
-for i = 1:length(master_struct_multi_g)-1
+for i = 1:length(master_struct_multi_g)
     ir_vec = master_struct_multi_g(i).sweep_results.metric_array(:,ir_index_num);
     phi_vec = master_struct_multi_g(i).sweep_results.metric_array(:,phi_index_num);
     
@@ -432,21 +434,21 @@ for i = 1:length(master_struct_multi_g)-1
     ir_options = find(ir_vec >=0 & ir_vec);    
     [N,~,bin] = histcounts(ir_vec(ir_options));
     plot_ids = randsample(ir_options,n_plot,true,1./N(bin));
-    g_temp = i + normrnd(0,0.025,n_plot,1);
+    g_temp = 1 + i + normrnd(0,0.025,n_plot,1);
     scatter(g_temp,ir_vec(plot_ids)*log2(exp(1)),25,'MarkerFaceColor',cmap_pu(2+i,:)...
                  ,'MarkerEdgeColor','k','MarkerFaceAlpha',0.2,'MarkerEdgeAlpha',0.1);
 end
 
 % plot quadratic trend
-a_vec = 0:5;
-mdl = fitlm((1:4)',ir_maxima','Intercept',false);
+a_vec = 0:6;
+mdl = fitlm(1+(0:4)',[0; ir_maxima']);%,'Intercept',false);
 trend_vec = predict(mdl,a_vec');
 plot(a_vec,trend_vec,'-.k','LineWidth',3);
 
 
 % ylim([1e-3 0.5])
 % legend([seq sneq],'equilibrium','non-equilibrium','Location','northwest')
-xlabel('number of activation steps');
+xlabel('number of locus conformation (N_{LC})');
 ylabel('information rate (bits per burst cycle)')
 
 grid on
@@ -459,7 +461,7 @@ ax = gca;
 ax.YAxis(1).Color = 'k';
 ax.XAxis(1).Color = 'k';
 ylim([0 0.1])
-xlim([0.5 4.5])
+xlim([1.5 5.5])
 eq_bound_a.InvertHardcopy = 'off';
 set(gcf,'color','w');
 
@@ -467,7 +469,7 @@ saveas(eq_bound_a,[FigPath 'info_vs_a.png'])
 saveas(eq_bound_a,[FigPath 'info_vs_a.pdf']) 
 
 
-%% Plot DT neq bounds as a function of N_a
+%% Plot DT neq bounds as a function of N_LC
 % note that I'm using low Phi as a proxy for eq performance
 
 n_plot = 500;
@@ -477,7 +479,7 @@ neq_bound_a = figure;
 hold on
 dt_minima = [];
 % make plots
-for i = 1:length(master_struct_multi_g)-1
+for i = 1:length(master_struct_multi_g)
     ir_vec = master_struct_multi_g(i).sweep_results.metric_array(:,ir_index_num);
     phi_vec = master_struct_multi_g(i).sweep_results.metric_array(:,phi_index_num);
     dt_vec = 1./master_struct_multi_g(i).sweep_results.metric_array(:,inv_dtime_index_num );
@@ -485,7 +487,7 @@ for i = 1:length(master_struct_multi_g)-1
     dt_options = find(ir_vec >=0 & ~isnan(dt_vec) & dt_vec <999 & dt_vec >= 0);
     [N,~,bin] = histcounts(dt_vec(dt_options),logspace(-1,3));
     plot_ids = randsample(dt_options,n_plot,true,1./N(bin));
-    g_temp = i + normrnd(0,0.025,n_plot,1);
+    g_temp = i + 1 + normrnd(0,0.025,n_plot,1);
     
     scatter(g_temp,dt_vec(plot_ids),25,'MarkerFaceColor',cmap_pu(2+i,:),'MarkerEdgeColor',...
                                     'k','MarkerFaceAlpha',0.2,'MarkerEdgeAlpha',0.1);        
@@ -495,12 +497,12 @@ for i = 1:length(master_struct_multi_g)-1
 end
 
 % plot quadratic trend
-a_vec = linspace(0,5);
-mdl = fitlm((1:4)',1./dt_minima','Intercept',false);
+a_vec = linspace(0,6);
+mdl = fitlm(1+(1:4)',1./dt_minima');
 trend_vec = predict(mdl,a_vec');
 plot(a_vec,1./trend_vec,'-.k','LineWidth',3);
 
-xlabel('number of activation steps');
+xlabel('number of locu conformation (N_{LC})');
 ylabel('decision time (burst cycles)')
 
 grid on
@@ -513,7 +515,7 @@ ax = gca;
 ax.YAxis(1).Color = 'k';
 ax.XAxis(1).Color = 'k';
 ylim([1 5e2])
-xlim([0.5 4.5])
+xlim([1.5 5.5])
 set(gca,'yscale','log')
 neq_bound_a.InvertHardcopy = 'off';
 set(gcf,'color','w');
