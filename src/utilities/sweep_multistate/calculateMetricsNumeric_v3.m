@@ -140,7 +140,7 @@ if ~isempty(param_array)
                 VarianceRaw(i) = calculate_var_num(Q_num_cs,state_probs_cs(i,:),activeStateFilter,Z_num_cs,numerical_precision);
                 Phi(i) = calculate_entropy_rate_num(Q_num_cs,state_probs_cs(i,:),numerical_precision);   
 
-                if ~low_flag && VarianceRaw(i)>0 && Phi(i)>=0 && sum(state_probs_cs(i,activeStateFilter))<a1 && ...
+                if VarianceRaw(i)>0 && Phi(i)>=0 && sum(state_probs_cs(i,activeStateFilter))<a1 && ...
                                                   sum(state_probs_cs(i,activeStateFilter))>a0  
                     use_flags(i) = true;
 

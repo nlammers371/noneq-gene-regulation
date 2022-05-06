@@ -13,7 +13,7 @@ ds_flag = 1;
 
 % Set Dropbox directory
 DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
-writePath = [DropboxFolder filesep 'sweeps03B_ir_vs_rate_cw' filesep];
+writePath = [DropboxFolder filesep 'sweeps03B_ir_vs_rate_cw_v2' filesep];
 mkdir(writePath);
 
 % this contains paths used to address correct functions
@@ -42,8 +42,10 @@ for m = 1:length(n_g_vec)
 end    
                       
 % set sim options
-sweep_options = {'n_sim',50,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, ...
-                'useParpool',1,'TauCycleTime',1,'downsample_output',ds_flag};
+% NL: note that we're runnign for 100 iterations this time, since I saw
+% that some eq sweeps were not converging
+sweep_options = {'n_sim',50,'n_seeds',15,'n_iters_max',100, 'numerical_precision',10, ...
+                'useParpool',1,'TauCycleTime',1,'downsample_output',ds_flag}; 
 %%   
 rate_index = find(strcmp(metric_names,'ProductionRate'));
 sharpness_index = find(strcmp(metric_names,'Sharpness'));
