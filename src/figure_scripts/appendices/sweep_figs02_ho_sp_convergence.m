@@ -563,7 +563,3 @@ ir_match.InvertHardcopy = 'off';
 set(gcf,'color','w');      
 saveas(ir_match,[FigPath 'ir_scatter.png'])   
 saveas(ir_match,[FigPath 'ir_scatter.pdf']) 
-
-%% 
-cv_frac_sp_bs = [cv_struct_multi_bs.cv_frac_sp]
-cv_frac_sp_lc = [cv_struct_multi_lc.cv_frac_sp]

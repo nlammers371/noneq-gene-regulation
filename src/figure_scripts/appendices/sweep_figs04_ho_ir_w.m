@@ -152,3 +152,83 @@ for i = 1:length(max_ir_vec)
         full_sweep_ir_vals(i) = max_ir_vec_full(match_filter);
     end
 end    
+
+%% Make figure
+
+% Define colormaps for use throughout
+cmap_pu = brewermap(8,'Purples');
+cmap_rd = brewermap(8,'Reds');
+cmap_bu = brewermap(8,'Blues');
+cmap_gre = brewermap(8,'Greens');
+cmap_gra = brewermap(8,'Greys');
+
+close all
+color_ind = 5;
+cmap_full = [cmap_pu(3,:); cmap_gre(color_ind,:); cmap_rd(color_ind,:); ...
+          cmap_bu(color_ind,:) ; cmap_gra(color_ind,:)];
+        
+ir_match_lc = figure;
+neq_inds = find(~eq_flag_vec);
+
+hold on
+plot(linspace(0,0.04),linspace(0,0.04),'-.k','LineWidth',2)
+s = [];
+for i = length(neq_inds):-1:1
+    nlc = nlc_val_vec(neq_inds(i));
+    s(nlc) = scatter(max_ir_vec(neq_inds(i)),full_sweep_ir_vals(neq_inds(i)),75,...
+            'MarkerFaceColor',cmap_pu(2+nlc,:),'MarkerEdgeColor','k','MarkerFaceAlpha',1,'MarkerEdgeAlpha',1);
+end
+
+
+xlabel('maximum IR value (IR vs. r)');
+ylabel('maximum IR value (IR vs. w)');
+
+grid on
+set(gca,'FontSize',14)
+legend(s,'N_{LC}=2','N_{LC}=3','N_{LC}=4','N_{LC}=5','Location','southeast')
+set(gca,'Color',[228,221,209]/255) 
+
+
+ax = gca;
+ax.YAxis(1).Color = 'k';
+ax.XAxis(1).Color = 'k';
+
+
+ir_match_lc.InvertHardcopy = 'off';
+set(gcf,'color','w');      
+saveas(ir_match_lc,[FigPath 'ir_w_scatter_LC.png'])   
+saveas(ir_match_lc,[FigPath 'ir_w_scatter_LC.pdf']) 
+
+%% 
+        
+ir_match_bs = figure;
+eq_inds = find(eq_flag_vec);
+
+hold on
+plot(linspace(0,0.07),linspace(0,0.07),'-.k','LineWidth',2)
+s = [];
+for i = length(eq_inds):-1:1
+    nb = nb_val_vec(eq_inds(i));
+    s(nb) = scatter(max_ir_vec(eq_inds(i)),full_sweep_ir_vals(eq_inds(i)),75,...
+            'MarkerFaceColor',cmap_full(nb,:),'MarkerEdgeColor','k','MarkerFaceAlpha',1,'MarkerEdgeAlpha',1);
+end
+
+xlabel('maximum IR value (IR vs. r)');
+ylabel('maximum IR value (IR vs. w)');
+
+grid on
+set(gca,'FontSize',14)
+legend(s,'N_{B}=1','N_{B}=2','N_{B}=3','N_{B}=4','N_{B}=5','Location','southeast')
+set(gca,'Color',[228,221,209]/255) 
+
+ax = gca;
+ax.YAxis(1).Color = 'k';
+ax.XAxis(1).Color = 'k';
+
+ylim([0 0.07])
+xlim([0 0.07])
+
+ir_match_bs.InvertHardcopy = 'off';
+set(gcf,'color','w');      
+saveas(ir_match_bs,[FigPath 'ir_w_scatter_BS.png'])   
+saveas(ir_match_bs,[FigPath 'ir_w_scatter_BS.pdf']) 
