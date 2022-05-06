@@ -5,7 +5,7 @@ addpath(genpath('../utilities/'))
 
 % %%%%%%%%%%%%%%%%  set relative read and write paths %%%%%%%%%%%%%%%%%%%%
 DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\Nonequilibrium\Nick\';
-DataPath = [DropboxFolder  'SweepOutput\sweeps01_info_vs_energy_v2\' filesep ];
+DataPath = [DropboxFolder  'SweepOutput\sweeps01_info_vs_energy\' filesep ];
 FigPath = [DropboxFolder '\manuscript\info_vs_energy' filesep];
 mkdir(FigPath);
 
