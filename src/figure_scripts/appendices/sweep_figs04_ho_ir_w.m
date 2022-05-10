@@ -6,7 +6,7 @@ addpath(genpath('../utilities/'))
 % %%%%%%%%%%%%%%%%  set relative read and write paths %%%%%%%%%%%%%%%%%%%%
 DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\Nonequilibrium\Nick\';
 DataPath = [DropboxFolder  'SweepOutput\sweeps03B_ir_vs_rate_cw' filesep ];
-DataPath_f5 = [DropboxFolder  'SweepOutput\sweeps03_info_vs_cw_rerun' filesep ];
+DataPath_f5 = [DropboxFolder  'SweepOutput\sweeps03_info_vs_cw_cb' filesep ];
 FigPath = [DropboxFolder '\manuscript\appendices' filesep 'sweep_algorithm' filesep];
 mkdir(FigPath);
 
@@ -131,7 +131,7 @@ for f = 1:4
     master_struct_multi_lc(f).ir_max_vec = ir_max_vec;
 end 
 
-%% Identify matches and compare IR values
+% Identify matches and compare IR values
 
 % generate helper vecs
 max_ir_vec_full = [[master_struct_multi_lc.ir_max_vec] [master_struct_multi_bs.ir_max_vec]];
@@ -276,7 +276,7 @@ saveas(ir_vs_r_fig,[FigPath 'ir_r_example_BS3.png'])
 
 cv_frac_vec = NaN(1,length(ref_struct));
 area_frac_vec = NaN(1,length(ref_struct));
-area_array = NaN(50,ref_struct(1).sweep_info.n_sim,length(ref_struct));
+area_array = NaN(100,ref_struct(1).sweep_info.n_sim,length(ref_struct));
 
 for r = 1:length(ref_struct)
     cv_frac_vec(r) = mean(ref_struct(r).sweep_info.convergence_flag_vec);

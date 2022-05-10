@@ -5,7 +5,7 @@ addpath(genpath('../utilities/'))
 
 % %%%%%%%%%%%%%%%%  set relative read and write paths %%%%%%%%%%%%%%%%%%%%
 DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\Nonequilibrium\Nick\';
-DataPath = [DropboxFolder  'SweepOutput\sweeps03_info_vs_cw' filesep ];
+DataPath = [DropboxFolder  'SweepOutput\sweeps03_info_vs_cw_cb' filesep ];
 FigPath = [DropboxFolder '\manuscript\performance_metrics_vs_cw' filesep];
 mkdir(FigPath);
 
@@ -37,11 +37,11 @@ cw_index = linspace(-1,6,101);
 %%%%%%%%%%%%%%%%%%%%%%%%5
 %%% Load multi bs results
 % get list of sweep results files with only 1 genera TF reaction
-multi_bs_sweep_files_eq = dir([DataPath 'sweep_results*g01*eq*']);
-multi_bs_info_files_eq = dir([DataPath 'sweep_info*g01*eq*']);
+multi_bs_sweep_files_eq = dir([DataPath 'sweep_results*g01_cw1_eq*']);
+multi_bs_info_files_eq = dir([DataPath 'sweep_info*g01_cw1_eq*']);
 
-multi_bs_sweep_files_neq = dir([DataPath 'sweep_results*g01_cw1.mat']);
-multi_bs_info_files_neq = dir([DataPath 'sweep_info*g01_cw1.mat']);
+% multi_bs_sweep_files_neq = dir([DataPath 'sweep_results*g01_cw1.mat']);
+% multi_bs_info_files_neq = dir([DataPath 'sweep_info*g01_cw1.mat']);
 
 % load
 master_struct_multi_bs = struct;
@@ -55,24 +55,25 @@ for f = 1:length(multi_bs_sweep_files_eq)
     master_struct_multi_bs(f).sweep_info_eq = sim_info;
         
     % load neq files
-    load([DataPath multi_bs_sweep_files_neq(f).name])
-    load([DataPath multi_bs_info_files_neq(f).name])
-    
-    master_struct_multi_bs(f).sweep_results = sim_results;
-    master_struct_multi_bs(f).sweep_info = sim_info;
+%     load([DataPath multi_bs_sweep_files_neq(f).name])
+%     load([DataPath multi_bs_info_files_neq(f).name])
+%     
+%     master_struct_multi_bs(f).sweep_results = sim_results;
+%     master_struct_multi_bs(f).sweep_info = sim_info;
 end    
 
 rng(321);
 
 
 for i = 1:length(master_struct_multi_bs)
-    for eq = 0:1
+    for eq = 1
         if eq
             metric_array = master_struct_multi_bs(i).sweep_results_eq.metric_array;  
+            a_factor = master_struct_multi_bs(i).sweep_info_eq.specFactor;
         else
             metric_array = master_struct_multi_bs(i).sweep_results.metric_array;  
-        end
-        a_factor = master_struct_multi_bs(i).sweep_info.specFactor;
+            a_factor = master_struct_multi_bs(i).sweep_info.specFactor;
+        end        
         % extract vectors    
         cw_vec = metric_array(:,cw_index_num);
         ir_vec = metric_array(:,ir_index_num)*bit_factor;            
@@ -131,8 +132,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%5
 % Load multi g results
 % get list of sweep results files with only 1 genera TF reaction
-multi_g_sweep_files = dir([DataPath 'sweep_results_s01_ns00_g0*_cw1.mat']);
-multi_g_info_files = dir([DataPath 'sweep_info_s01_ns00_g0*_cw1.mat']);
+multi_g_sweep_files = dir([DataPath 'sweep_results_s01_ns00_g0*_cw1_neq.mat']);
+multi_g_info_files = dir([DataPath 'sweep_info_s01_ns00_g0*_cw1_neq.mat']);
 
 % load
 master_struct_multi_g = struct;
@@ -347,7 +348,7 @@ delete([s1 s2]);
 slb = [];
 plb = [];
 
-for i = 1:length(master_struct_multi_g)-1
+for i = 1:length(master_struct_multi_g)
     cw_vec = master_struct_multi_g(i).cw_boundary;
     ds_vec = 1:ds_factor:length(cw_vec);
     s_vec = master_struct_multi_g(i).sharp_boundary./master_struct_multi_bs(1).sharp_max_boundary_eq;
@@ -389,7 +390,7 @@ hold on
 slb = [];
 
 % 1 BS and multiple conformations     
-for i = 1:length(master_struct_multi_g)-1
+for i = 1:length(master_struct_multi_g)
     cw_vec = master_struct_multi_g(i).cw_boundary;
     ds_vec = 1:ds_factor:length(cw_vec);
     s_vec = master_struct_multi_g(i).sharp_right_boundary;
@@ -424,12 +425,12 @@ set(gca,'yscale','log')
 ylabel('specificity (f/\alpha)')
 
 % slb = [slb(2:end) slb(1)];                
-legend(slb, 'N_{LC}=2','N_{LC}=2','N_{LC}=3','N_{LC}=4','Location','northwest')
+legend(slb, 'N_{LC}=2','N_{LC}=3','N_{LC}=4','N_{LC}=5','Location','northwest')
 xlabel('relative wrong factor concentration (w/c)');
 
 set(gca,'FontSize',14)
 set(gca,'xscale','log')
-set(gca,'xtick',[1  10^2  10^4])
+set(gca,'xtick',[1 10 10^2 10^3 10^4 10^5])
 xlim([1 1e5])
 % ylim([1e-6 1])
 
