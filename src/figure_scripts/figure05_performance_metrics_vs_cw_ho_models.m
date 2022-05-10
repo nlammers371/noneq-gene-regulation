@@ -72,14 +72,16 @@ for i = 1:length(master_struct_multi_bs)
         else
             metric_array = master_struct_multi_bs(i).sweep_results.metric_array;  
         end
-        
+        a_factor = master_struct_multi_bs(i).sweep_info.specFactor;
         % extract vectors    
         cw_vec = metric_array(:,cw_index_num);
         ir_vec = metric_array(:,ir_index_num)*bit_factor;            
         dt_vec = 1./metric_array(:,inv_dt_index_num);            
         spec_vec = metric_array(:,spec_index_num);
+        spec_full_vec = 10.^spec_vec .* a_factor;
+        spec_prefactor = spec_full_vec ./ (spec_full_vec + 10.^cw_vec);
         sharp_vec = metric_array(:,sharp_index_num);
-        sharp_right_vec = metric_array(:,sharp_right_index_num);
+        sharp_right_vec = sharp_vec./spec_prefactor;%metric_array(:,sharp_right_index_num);
         prec_vec = metric_array(:,prec_index_num);
     
         % identify boundary points
@@ -146,15 +148,18 @@ end
 rng(321);
 
 for i = 1:length(master_struct_multi_g)
-  
+    a_factor = master_struct_multi_g(i).sweep_info.specFactor;
     % extract vectors
     metric_array = master_struct_multi_g(i).sweep_results.metric_array;   
     cw_vec = metric_array(:,cw_index_num);
     ir_vec = metric_array(:,ir_index_num)*bit_factor;    
     dt_vec = 1./metric_array(:,inv_dt_index_num); 
     spec_vec = metric_array(:,spec_index_num);
+    spec_full_vec = 10.^spec_vec .* a_factor;
+    spec_prefactor = spec_full_vec ./ (spec_full_vec + 10.^cw_vec);
     sharp_vec = metric_array(:,sharp_index_num);
-    sharp_right_vec = metric_array(:,sharp_right_index_num);
+    sharp_right_vec = sharp_vec./spec_prefactor;%    
+%     sharp_right_vec = metric_array(:,sharp_right_index_num);
     prec_vec = metric_array(:,prec_index_num);
         
     % identify boundary points
@@ -184,64 +189,64 @@ for i = 1:length(master_struct_multi_g)
     master_struct_multi_g(i).prec_boundary = imgaussfilt(prec_b_vec,2); 
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%5
-% Load 2BS multi g results
-
-% get list of sweep results files with only 1 genera TF reaction
-multi_g2_sweep_files = dir([DataPath 'sweep_results_s02_ns00_g0*_cw1.mat']);
-multi_g2_info_files = dir([DataPath 'sweep_info_s02_ns00_g0*_cw1.mat']);
-
-% load
-master_struct_multi_g2 = struct;
-for f = 1:length(multi_g2_sweep_files)
-  
-    load([DataPath multi_g2_sweep_files(f).name])
-    load([DataPath multi_g2_info_files(f).name])
-    
-    master_struct_multi_g2(f).sweep_results = sim_results;
-    master_struct_multi_g2(f).sweep_info = sim_info;
-end    
-
-rng(321);
-
-for i = 1:length(master_struct_multi_g2)
-  
-    % extract vectors
-    metric_array = master_struct_multi_g2(i).sweep_results.metric_array;   
-    cw_vec = metric_array(:,cw_index_num);
-    ir_vec = metric_array(:,ir_index_num)*bit_factor;    
-    dt_vec = 1./metric_array(:,inv_dt_index_num); 
-    spec_vec = metric_array(:,spec_index_num);
-    sharp_vec = metric_array(:,sharp_index_num);
-    sharp_right_vec = metric_array(:,sharp_right_index_num);
-    prec_vec = metric_array(:,prec_index_num);
-    
-    % identify boundary points
-    ir_b_vec = NaN(1,length(cw_index)-1);
-    dt_b_vec = NaN(1,length(cw_index)-1);
-    sharp_b_vec = NaN(1,length(cw_index)-1);
-    sharp_right_b_vec = NaN(1,length(cw_index)-1);
-    spec_b_vec = NaN(1,length(cw_index)-1);
-    prec_b_vec = NaN(1,length(cw_index)-1);
-    for c = 1:length(cw_index)-1
-        cw_filter = find(cw_vec<cw_index(c+1)&cw_vec>=cw_index(c));
-        [ir_b_vec(c), mi] = nanmax(ir_vec(cw_filter));
-        dt_b_vec(c) = dt_vec(cw_filter(mi));
-        sharp_b_vec(c) = sharp_vec(cw_filter(mi));        
-        sharp_right_b_vec(c) = sharp_right_vec(cw_filter(mi));
-        spec_b_vec(c) = spec_vec(cw_filter(mi));
-        prec_b_vec(c) = prec_vec(cw_filter(mi));
-    end
-    
-    % store    
-    master_struct_multi_g2(i).cw_boundary = 10.^cw_index(2:end);
-    master_struct_multi_g2(i).ir_boundary = imgaussfilt(ir_b_vec,2);  
-    master_struct_multi_g2(i).dt_boundary = imgaussfilt(dt_b_vec,2);
-    master_struct_multi_g2(i).sharp_boundary = imgaussfilt(sharp_b_vec,2);   
-    master_struct_multi_g2(i).sharp_right_boundary = imgaussfilt(sharp_right_b_vec,2);   
-    master_struct_multi_g2(i).spec_boundary = imgaussfilt(spec_b_vec,2);   
-    master_struct_multi_g2(i).prec_boundary = imgaussfilt(prec_b_vec,2); 
-end
+% %%%%%%%%%%%%%%%%%%%%%%%%5
+% % Load 2BS multi g results
+% 
+% % get list of sweep results files with only 1 genera TF reaction
+% multi_g2_sweep_files = dir([DataPath 'sweep_results_s02_ns00_g0*_cw1.mat']);
+% multi_g2_info_files = dir([DataPath 'sweep_info_s02_ns00_g0*_cw1.mat']);
+% 
+% % load
+% master_struct_multi_g2 = struct;
+% for f = 1:length(multi_g2_sweep_files)
+%   
+%     load([DataPath multi_g2_sweep_files(f).name])
+%     load([DataPath multi_g2_info_files(f).name])
+%     
+%     master_struct_multi_g2(f).sweep_results = sim_results;
+%     master_struct_multi_g2(f).sweep_info = sim_info;
+% end    
+% 
+% rng(321);
+% 
+% for i = 1:length(master_struct_multi_g2)
+%   
+%     % extract vectors
+%     metric_array = master_struct_multi_g2(i).sweep_results.metric_array;   
+%     cw_vec = metric_array(:,cw_index_num);
+%     ir_vec = metric_array(:,ir_index_num)*bit_factor;    
+%     dt_vec = 1./metric_array(:,inv_dt_index_num); 
+%     spec_vec = metric_array(:,spec_index_num);
+%     sharp_vec = metric_array(:,sharp_index_num);
+%     sharp_right_vec = metric_array(:,sharp_right_index_num);
+%     prec_vec = metric_array(:,prec_index_num);
+%     
+%     % identify boundary points
+%     ir_b_vec = NaN(1,length(cw_index)-1);
+%     dt_b_vec = NaN(1,length(cw_index)-1);
+%     sharp_b_vec = NaN(1,length(cw_index)-1);
+%     sharp_right_b_vec = NaN(1,length(cw_index)-1);
+%     spec_b_vec = NaN(1,length(cw_index)-1);
+%     prec_b_vec = NaN(1,length(cw_index)-1);
+%     for c = 1:length(cw_index)-1
+%         cw_filter = find(cw_vec<cw_index(c+1)&cw_vec>=cw_index(c));
+%         [ir_b_vec(c), mi] = nanmax(ir_vec(cw_filter));
+%         dt_b_vec(c) = dt_vec(cw_filter(mi));
+%         sharp_b_vec(c) = sharp_vec(cw_filter(mi));        
+%         sharp_right_b_vec(c) = sharp_right_vec(cw_filter(mi));
+%         spec_b_vec(c) = spec_vec(cw_filter(mi));
+%         prec_b_vec(c) = prec_vec(cw_filter(mi));
+%     end
+%     
+%     % store    
+%     master_struct_multi_g2(i).cw_boundary = 10.^cw_index(2:end);
+%     master_struct_multi_g2(i).ir_boundary = imgaussfilt(ir_b_vec,2);  
+%     master_struct_multi_g2(i).dt_boundary = imgaussfilt(dt_b_vec,2);
+%     master_struct_multi_g2(i).sharp_boundary = imgaussfilt(sharp_b_vec,2);   
+%     master_struct_multi_g2(i).sharp_right_boundary = imgaussfilt(sharp_right_b_vec,2);   
+%     master_struct_multi_g2(i).spec_boundary = imgaussfilt(spec_b_vec,2);   
+%     master_struct_multi_g2(i).prec_boundary = imgaussfilt(prec_b_vec,2); 
+% end
 
 %% load dataset with decision time ranges 
 load('decision_limit_info.mat','decision_limit_info')
@@ -336,7 +341,7 @@ saveas(s_p_fig,[FigPath 's_p_vs_cw_LC2.png'])
 saveas(s_p_fig,[FigPath 's_p_vs_cw_LC2.pdf']) 
 
 
-delete([p1 p2 p3]);
+delete([p1 p2 p3']);
 delete([s1 s2]);
 
 slb = [];

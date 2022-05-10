@@ -6,7 +6,7 @@ addpath(genpath('../utilities/'))
 % %%%%%%%%%%%%%%%%  set relative read and write paths %%%%%%%%%%%%%%%%%%%%
 DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\Nonequilibrium\Nick\';
 DataPath = [DropboxFolder  'SweepOutput\sweeps03B_ir_vs_rate_cw' filesep ];
-DataPath_f5 = [DropboxFolder  'SweepOutput\sweeps03_info_vs_cw' filesep ];
+DataPath_f5 = [DropboxFolder  'SweepOutput\sweeps03_info_vs_cw_rerun' filesep ];
 FigPath = [DropboxFolder '\manuscript\appendices' filesep 'sweep_algorithm' filesep];
 mkdir(FigPath);
 
@@ -63,11 +63,11 @@ max_ir_vec = [ref_struct.max_ir];
 %% Load IR vs. W results used in main text Figure 5
 w_index_vec = unique(w_val_vec);
 
-multi_bs_sweep_files_f5 = dir([DataPath_f5 'sweep_results*g01*eq*']);
-multi_bs_info_files_f5 = dir([DataPath_f5 'sweep_info*g01*eq*']);
+multi_bs_sweep_files_f5 = dir([DataPath_f5 'sweep_results*g01_cw1_eq*']);
+multi_bs_info_files_f5 = dir([DataPath_f5 'sweep_info*g01_cw1_eq*']);
 
-multi_lc_sweep_files_f5 = dir([DataPath_f5 'sweep_results*s01*cw1.mat']);
-multi_lc_info_files_f5 = dir([DataPath_f5 'sweep_info*s01*cw1.mat']);
+multi_lc_sweep_files_f5 = dir([DataPath_f5 'sweep_results*s01*_cw1_neq*.mat']);
+multi_lc_info_files_f5 = dir([DataPath_f5 'sweep_info*s01*_cw1_neq*.mat']);
 
 master_struct_multi_lc = struct;
 master_struct_multi_bs = struct;
@@ -200,19 +200,17 @@ saveas(ir_match_lc,[FigPath 'ir_w_scatter_LC.png'])
 saveas(ir_match_lc,[FigPath 'ir_w_scatter_LC.pdf']) 
 
 %% 
-
-
         
 ir_match_bs = figure;
 eq_inds = find(eq_flag_vec);
 
 hold on
-plot(linspace(0,0.04),linspace(0,0.04),'-.k','LineWidth',2)
+plot(linspace(0,0.07),linspace(0,0.07),'-.k','LineWidth',2)
 s = [];
 for i = length(eq_inds):-1:1
     nb = nb_val_vec(eq_inds(i));
-    s(nb) = scatter(max_ir_vec(neq_inds(i)),full_sweep_ir_vals(neq_inds(i)),75,...
-            'MarkerFaceColor',cmap_full(2+nlc,:),'MarkerEdgeColor','k','MarkerFaceAlpha',1,'MarkerEdgeAlpha',1);
+    s(nb) = scatter(max_ir_vec(eq_inds(i)),full_sweep_ir_vals(eq_inds(i)),75,...
+            'MarkerFaceColor',cmap_full(nb,:),'MarkerEdgeColor','k','MarkerFaceAlpha',1,'MarkerEdgeAlpha',1);
 end
 
 xlabel('maximum IR value (IR vs. r)');
@@ -220,15 +218,82 @@ ylabel('maximum IR value (IR vs. w)');
 
 grid on
 set(gca,'FontSize',14)
-legend(fliplr(s),'N_{B}=1','N_{B}=2','N_{B}=3','N_{B}=4','N_{B}=5','Location','southeast')
+legend(s,'N_{B}=1','N_{B}=2','N_{B}=3','N_{B}=4','N_{B}=5','Location','southeast')
 set(gca,'Color',[228,221,209]/255) 
 
 ax = gca;
 ax.YAxis(1).Color = 'k';
 ax.XAxis(1).Color = 'k';
 
+ylim([0 0.07])
+xlim([0 0.07])
 
 ir_match_bs.InvertHardcopy = 'off';
 set(gcf,'color','w');      
-saveas(ir_match_bs,[FigPath 'ir_phi_scatter_BS.png'])   
-saveas(ir_match_bs,[FigPath 'ir_phi_scatter_BS.pdf']) 
+saveas(ir_match_bs,[FigPath 'ir_w_scatter_BS.png'])   
+saveas(ir_match_bs,[FigPath 'ir_w_scatter_BS.pdf']) 
+
+%% Make illustrative figure of rate vs IR
+
+nb = 3;
+eq = 1;
+nlc = 1;
+
+plot_inds = find(nb_val_vec==nb & nlc_val_vec==nlc & eq_flag_vec == eq);
+
+ir_vs_r_fig = figure;
+cmap = brewermap(5,'Reds');
+hold on
+for p = 1:length(plot_inds)
+    scatter(ref_struct(plot_inds(p)).sweep_results.metric_array(:,1),ref_struct(plot_inds(p)).sweep_results.metric_array(:,5),75,...
+      'MarkerFaceColor',cmap(p+1,:),'MarkerEdgeColor','k','MarkerFaceAlpha',0.5,'MarkerEdgeAlpha',0.5)
+end    
+
+xlabel('transcription rate (r)');
+ylabel('information per burst (bits)');
+
+set(gca,'yscale','log')
+ylim([1e-5 0.5])
+
+grid on
+set(gca,'FontSize',14)
+legend('w/c=10','w/c=10^2','w/c=10^3','Location','northwest')
+set(gca,'Color',[228,221,209]/255) 
+
+ax = gca;
+ax.YAxis(1).Color = 'k';
+ax.XAxis(1).Color = 'k';
+
+% ylim([0 0.07])
+% xlim([0 0.07])
+
+ir_vs_r_fig.InvertHardcopy = 'off';
+set(gcf,'color','w');      
+
+saveas(ir_vs_r_fig,[FigPath 'ir_r_example_BS3.png'])  
+
+%% Check convergence of IR vs. r runs
+
+cv_frac_vec = NaN(1,length(ref_struct));
+area_frac_vec = NaN(1,length(ref_struct));
+area_array = NaN(50,ref_struct(1).sweep_info.n_sim,length(ref_struct));
+
+for r = 1:length(ref_struct)
+    cv_frac_vec(r) = mean(ref_struct(r).sweep_info.convergence_flag_vec);
+    
+    area_vec = ref_struct(r).sweep_results.areaVec;
+    area_id_vec = ref_struct(r).sweep_results.areaIDVec;
+    a_array_temp = area_array(:,:,r);
+    a_index = unique(area_id_vec);
+    for a = 1:length(a_index)
+        a_vec = area_vec(area_id_vec==a_index(a));
+        a_array_temp(1:length(a_vec),a) = a_vec;
+        a_array_temp(length(a_vec)+1:end,a) = a_vec(end);
+    end
+    a_array_temp = a_array_temp ./ nanmax(a_array_temp(:));
+    area_array(:,:,r) = a_array_temp;
+    area_frac_vec(r) = mean(a_array_temp(end,:)>=0.95);
+end    
+    
+    
+    
