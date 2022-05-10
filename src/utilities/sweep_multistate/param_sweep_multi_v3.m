@@ -156,7 +156,7 @@ if any(strcmp(metric_names_sweep,'CW'))
         sweepFlags(simInfo.b_index) = false;
     end
     simInfo.sweepFlags = sweepFlags;
-    paramBounds(:,simInfo.cw_index) = [log10(specFactor/1000) ; log10(specFactor^3.1)];
+    paramBounds(:,simInfo.cw_index) = [-1 ; log10(specFactor^3)];
     simInfo.paramBounds = paramBounds;
 end
 

@@ -42,7 +42,7 @@ for m = 1:length(n_g_vec)
 end    
                       
 % set sim options
-sweep_options = {'n_sim',1000,'n_seeds',15,'n_iters_max',50, 'numerical_precision',10, ...
+sweep_options = {'n_sim',1e3,'n_seeds',15,'n_iters_max',100, 'numerical_precision',10, ...
                 'useParpool',1,'TauCycleTime',1,'downsample_output',ds_flag};
 %%   
 rate_index = find(strcmp(metric_names,'ProductionRate'));
@@ -54,14 +54,14 @@ cw_index = find(strcmp(metric_names,'CW'));
 ir_index = find(strcmp(metric_names,'IR'));
         
 
-for equilibrium_flag = 1%:1
-    for m = 1
-        if false%m == 1
-            bs_list = 1:5;
-        else
-            bs_list = 2:5;
-        end
-        for n = bs_list
+for equilibrium_flag = 0
+    for m = 1:4
+%         if false%m == 1
+%             bs_list = 1:5;
+%         else
+%             bs_list = 2:5;
+%         end
+        for n = 1
             % call sweep function
             tic
             [sim_info, sim_results, sim_results_short] = ...
