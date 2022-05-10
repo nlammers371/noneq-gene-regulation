@@ -6,7 +6,7 @@ addpath(genpath('../utilities/'))
 
 % set basic parameters
 nStates = 6;
-paramBounds = repmat([-10 ; 6],1,3*nStates-4); % constrain transition rate magnitude
+% paramBounds = repmat([-10 ; 6],1,3*nStates-4); % constrain transition rate magnitude
 [~,~,metric_names] = calculateMetricsSym_v2([]);
 
 % specify function path
@@ -31,6 +31,7 @@ ir_index = find(strcmp(metric_names,'DecisionRateNorm'));
 sharpness_index = find(strcmp(metric_names,'Sharpness'));
 precision_index = find(strcmp(metric_names,'Precision'));
 precision_right_index = find(strcmp(metric_names,'PrecisionRight'));
+sharp_right_alt_index = find(strcmp(metric_names,'SharpnessRightAlt'));
 cw_index = find(strcmp(metric_names,'CW'));
 
 % set sim options
@@ -48,50 +49,51 @@ bit_factor = log2(exp(1));
 
 %% Plot f0 vs s0 
 
-cw = 1; % precise value unimportant...just something small enough to be negligible
+cw = 1; % note that value does not matter
 tic
-[sim_info_neq, sim_struct_neq] = param_sweep_multi_v3([sharp_right_norm_index spec_index],functionPath,sweep_options{:},...
+[sim_info_neq, sim_struct_neq] = param_sweep_multi_v3([sharp_right_alt_index spec_index],functionPath,sweep_options{:},...
                                           'half_max_flag',false,'cw',cw,...
                                           'equilibrium_flag',false,'specFactor',alpha_factor);
 
-[sim_info_eq, sim_struct_eq] = param_sweep_multi_v3([sharp_right_norm_index spec_index],functionPath,sweep_options{:},...
+[sim_info_eq, sim_struct_eq] = param_sweep_multi_v3([sharp_right_alt_index spec_index],functionPath,sweep_options{:},...
                                           'half_max_flag',false,'cw',cw,...
                                           'equilibrium_flag',true,'specFactor',alpha_factor);                                        
 toc     
 
 % now for high CW
-cw_high = 1e3;
-tic
-[sim_info_neq_high, sim_struct_neq_high] = param_sweep_multi_v3([sharp_right_norm_index spec_index],functionPath,sweep_options{:},...
-                                          'half_max_flag',false,'cw',cw_high,...
-                                          'equilibrium_flag',false,'specFactor',alpha_factor);
-
-[sim_info_eq_high, sim_struct_eq_high] = param_sweep_multi_v3([sharp_right_norm_index spec_index],functionPath,sweep_options{:},...
-                                          'half_max_flag',false,'cw',cw_high,...
-                                          'equilibrium_flag',true,'specFactor',alpha_factor);                                        
-toc     
+% cw_high = 1e3;
+% tic
+% [sim_info_neq_high, sim_struct_neq_high] = param_sweep_multi_v3([sharp_right_alt_index spec_index],functionPath,sweep_options{:},...
+%                                           'half_max_flag',false,'cw',cw_high,...
+%                                           'equilibrium_flag',false,'specFactor',alpha_factor);
+% 
+% [sim_info_eq_high, sim_struct_eq_high] = param_sweep_multi_v3([sharp_right_alt_index spec_index],functionPath,sweep_options{:},...
+%                                           'half_max_flag',false,'cw',cw_high,...
+%                                           'equilibrium_flag',true,'specFactor',alpha_factor);                                        
+% toc     
 
 %% Define function for analytic bound
 
-cr = 1;
+% cr = 1;
 f_axis = logspace(log10(alpha_factor),log10(alpha_factor^2));
 
 % s0_bound2 = (1+(alpha_factor.^2+(-1).*f_axis).*((-1).*alpha_factor.*cw+(((-1)+alpha_factor).*cr+cw).*f_axis).^(-1));
-%%
+
 close all
 rd = [190 30 45]/255;
 
 cr = 1;
 rng(123)
 cw_vec = [1 1e3];
-for high_flag = 0:1
+for high_flag = 0%:1
     
     suffix = '';
     if high_flag
         suffix = '_high';
     end
     cw = cw_vec(high_flag+1);
-    s0_bound_pd = (1 + (alpha_factor^2-f_axis)./(f_axis.*alpha_factor + cw*(f_axis-alpha_factor)));
+%     s0_bound_pd = (1 + (alpha_factor^2-f_axis)./(f_axis.*alpha_factor + cw*(f_axis-alpha_factor)));
+    s0_bound_pd = ((alpha_factor^2+alpha_factor.*f_axis-2*f_axis)./(f_axis.*alpha_factor - f_axis));
     % generate vectors to plot (neq)
     if ~high_flag
         results_array_neq = sim_struct_neq.metric_array;

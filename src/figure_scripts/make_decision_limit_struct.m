@@ -20,7 +20,7 @@ name_cell = {'Drosophila (early development)', 'C. elegans (adult)', 'Arabidopsi
         % lower bound to 30 min
 % Note 5: Remaining bounds are taken from HL estimates provided in Table 1 of: 1. Pérez-Ortín, J. E., Alepuz, P., Chávez, S. & Choder, M. Eukaryotic mRNA Decay: Methodologies, Pathways, and Links to Other Stages of Gene Expression. (2013). doi:10.1016/j.jmb.2013.02.029        
 
-mRNA_half_life_ub = [60*log(2), 24*60*log(2), 5.9*60, 48*60, 30*60]/log(2);
+mRNA_half_life_ub = [65*log(2), 24*60*log(2), 5.9*60, 48*60, 30*60]/log(2);
 mRNA_half_life_lb = [7*log(2),  6*60,         30,     4*60, 30]/log(2);
 
 %%%%%%%%%%%%%%%

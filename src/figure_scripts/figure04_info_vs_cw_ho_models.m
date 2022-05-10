@@ -5,7 +5,7 @@ addpath(genpath('../utilities/'))
 
 % %%%%%%%%%%%%%%%%  set relative read and write paths %%%%%%%%%%%%%%%%%%%%
 DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\Nonequilibrium\Nick\';
-DataPath = [DropboxFolder  'SweepOutput\sweeps03_info_vs_cw' filesep ];
+DataPath = [DropboxFolder  'SweepOutput\sweeps03_info_vs_cw_cb' filesep ];
 FigPath = [DropboxFolder '\manuscript\info_vs_cw' filesep];
 mkdir(FigPath);
 
@@ -60,8 +60,8 @@ cw_index = sort([cw_index log10(dt_cw_vec(end))]);
 multi_bs_sweep_files_eq = dir([DataPath 'sweep_results*g01_cw1_eq*']);
 multi_bs_info_files_eq = dir([DataPath 'sweep_info*g01_cw1_eq*']);
 
-multi_bs_sweep_files_neq = dir([DataPath 'sweep_results*g01_cw1_neq*']);
-multi_bs_info_files_neq = dir([DataPath 'sweep_info*g01_cw1_neq*']);
+% multi_bs_sweep_files_neq = dir([DataPath 'sweep_results*g01_cw1_neq*']);
+% multi_bs_info_files_neq = dir([DataPath 'sweep_info*g01_cw1_neq*']);
 
 % load
 master_struct_multi_bs = struct;
@@ -75,11 +75,11 @@ for f = 1:length(multi_bs_sweep_files_eq)
     master_struct_multi_bs(f).sweep_info_eq = sim_info;
         
     % load neq files
-    load([DataPath multi_bs_sweep_files_neq(f).name])
-    load([DataPath multi_bs_info_files_neq(f).name])
-    
-    master_struct_multi_bs(f).sweep_results = sim_results;
-    master_struct_multi_bs(f).sweep_info = sim_info;
+%     load([DataPath multi_bs_sweep_files_neq(f).name])
+%     load([DataPath multi_bs_info_files_neq(f).name])
+%     
+%     master_struct_multi_bs(f).sweep_results = sim_results;
+%     master_struct_multi_bs(f).sweep_info = sim_info;
 end    
 
 rng(321);
@@ -87,33 +87,33 @@ rng(321);
 
 for i = 1:length(master_struct_multi_bs)
     % extract vectors
-    metric_array = master_struct_multi_bs(i).sweep_results.metric_array;   
-    cw_vec = metric_array(:,cw_index_num);
-    ir_vec = metric_array(:,ir_index_num)*bit_factor;            
-    dt_vec = 1./metric_array(:,inv_dt_index_num);            
-    % identify boundary points
-    ir_b_vec = NaN(1,length(cw_index)-1);
-    dt_b_vec = NaN(1,length(cw_index)-1);
-    for c = 1:length(cw_index)-1
-        cw_filter = find(cw_vec<cw_index(c+1)&cw_vec>=cw_index(c));
-        if any(cw_filter)
-            [ir_b_vec(c), mi] = nanmax(ir_vec(cw_filter));
-            dt_b_vec(c) = dt_vec(cw_filter(mi));
-        end
-    end
-    
-    % check for missing values
-    nan_flags = isnan(dt_b_vec);
-    ir_b_vec = ir_b_vec(~nan_flags);
-    dt_b_vec = dt_b_vec(~nan_flags);
-    cw_vec_neq = 10.^cw_index(2:end);
-    cw_vec_neq = cw_vec_neq(~nan_flags);
-%     if any(nan_flags)
-        
-    % store    
-    master_struct_multi_bs(i).cw_boundary = cw_vec_neq;
-    master_struct_multi_bs(i).ir_boundary = imgaussfilt(ir_b_vec,2);   
-    master_struct_multi_bs(i).dt_boundary = imgaussfilt(dt_b_vec,2);   
+%     metric_array = master_struct_multi_bs(i).sweep_results.metric_array;   
+%     cw_vec = metric_array(:,cw_index_num);
+%     ir_vec = metric_array(:,ir_index_num)*bit_factor;            
+%     dt_vec = 1./metric_array(:,inv_dt_index_num);            
+%     % identify boundary points
+%     ir_b_vec = NaN(1,length(cw_index)-1);
+%     dt_b_vec = NaN(1,length(cw_index)-1);
+%     for c = 1:length(cw_index)-1
+%         cw_filter = find(cw_vec<cw_index(c+1)&cw_vec>=cw_index(c));
+%         if any(cw_filter)
+%             [ir_b_vec(c), mi] = nanmax(ir_vec(cw_filter));
+%             dt_b_vec(c) = dt_vec(cw_filter(mi));
+%         end
+%     end
+%     
+%     % check for missing values
+%     nan_flags = isnan(dt_b_vec);
+%     ir_b_vec = ir_b_vec(~nan_flags);
+%     dt_b_vec = dt_b_vec(~nan_flags);
+%     cw_vec_neq = 10.^cw_index(2:end);
+%     cw_vec_neq = cw_vec_neq(~nan_flags);
+% %     if any(nan_flags)
+%         
+%     % store    
+%     master_struct_multi_bs(i).cw_boundary = cw_vec_neq;
+%     master_struct_multi_bs(i).ir_boundary = imgaussfilt(ir_b_vec,2);   
+%     master_struct_multi_bs(i).dt_boundary = imgaussfilt(dt_b_vec,2);   
     
     % do the same for eq systems
     metric_array_eq = master_struct_multi_bs(i).sweep_results_eq.metric_array;   
@@ -264,16 +264,16 @@ end
 % plot Ir noneq bound
 % plot(master_struct_multi_bs(end).cw_boundary,master_struct_multi_bs(end).ir_boundary,':','Color',brighten(cmap_cmb(end,:),-0.5),'LineWidth',3)
 
-% legend(feq,'N_a=1','N_a=2','N_a=3','N_a=4','N_a=5')
+legend(fliplr(feq),'N_B=1','N_B=2','N_B=3','N_B=4','N_B=5','Location','northeast')
 xlabel('relative wrong factor concentration (w/c)');
-ylabel('info. rate (bits per burst cycle)')
+ylabel('information rate (bits per burst)')
 grid on
 box on
-set(gca,'FontSize',18)
+set(gca,'FontSize',14)
 % set(gca,'Color',[228,221,209]/255) 
 set(gca,'yscale','log')
 set(gca,'xscale','log')
-set(gca,'xtick',[1  10^2  10^4 ])
+set(gca,'xtick',[1  10 10^2 10^3 10^4 10^5])
 xlim([1 1e5])
 ylim([1e-6 1])
 
@@ -380,17 +380,17 @@ end
 % plot Ir noneq bound
 % plot(master_struct_multi_bs(end).cw_boundary,master_struct_multi_bs(end).ir_boundary,':','Color',brighten(cmap_cmb(end,:),-0.5),'LineWidth',3)
 
-% legend([fliplr(fneq) f2],'N_g=2 (N_a=1)','N_g=3 (N_a=1)','N_g=4 (N_a=1)','N_g=5 (N_a=1)','N_g=4 (N_a=2)','Location','southeast')
+legend([fliplr(fneq)],'N_{LC}=2','N_{LC}=3','N_{LC}=4','N_{LC}=5','Location','southwest')
 xlabel('relative wrong factor concentration (w/c)');
-ylabel('info. rate (bits per burst cycle)')
+ylabel('information rate (bits per burst)')
 
 grid on
 box on
-set(gca,'FontSize',18)
+set(gca,'FontSize',14)
 % set(gca,'Color',[228,221,209]/255) 
 set(gca,'yscale','log')
 set(gca,'xscale','log')
-set(gca,'xtick',[1  10^2  10^4])
+set(gca,'xtick',[1 10 10^2 10^3 10^4 10^5])
 xlim([1 1e5])
 ylim([1e-6 1])
 
@@ -403,8 +403,8 @@ ir_space_fig_g.InvertHardcopy = 'off';
 set(gcf,'color','w');
 % ylim([0.25 1.75])
 
-% saveas(ir_space_fig_g,[FigPath 'ir_vec_cw_g.png'])
-% saveas(ir_space_fig_g,[FigPath 'ir_vec_cw_g.pdf']) 
+saveas(ir_space_fig_g,[FigPath 'ir_vec_cw_g.png'])
+saveas(ir_space_fig_g,[FigPath 'ir_vec_cw_g.pdf']) 
 
 %% Same thing for decision times
 
@@ -483,8 +483,8 @@ dt_space_fig_g.InvertHardcopy = 'off';
 set(gcf,'color','w');
 % ylim([0.25 1.75])
 
-% saveas(dt_space_fig_g,[FigPath 'dt_vec_cw_g.png'])
-% saveas(dt_space_fig_g,[FigPath 'dt_vec_cw_g.pdf'])
+saveas(dt_space_fig_g,[FigPath 'dt_vec_cw_g.png'])
+saveas(dt_space_fig_g,[FigPath 'dt_vec_cw_g.pdf'])
 
 %% look at trend with BS in equilibrium
 close all
