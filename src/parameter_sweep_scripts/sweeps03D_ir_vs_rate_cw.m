@@ -1,5 +1,5 @@
-% script to call core parameter sweep function to examine tradeoffs between
-% different transcritional input/output behaviors
+% script to call augment IR vs. w sweep results for case when N_LC = 5 and
+% w <~ 10
 
 clear 
 close all
@@ -13,7 +13,7 @@ ds_flag = 1;
 
 % Set Dropbox directory
 DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
-writePath = [DropboxFolder filesep 'sweeps03B_ir_vs_rate_cw_v2' filesep];
+writePath = [DropboxFolder filesep 'sweeps03D_ir_vs_rate_cw_augment' filesep];
 mkdir(writePath);
 
 % this contains paths used to address correct functions
@@ -44,7 +44,7 @@ end
 % set sim options
 % NL: note that we're runnign for 100 iterations this time, since I saw
 % that some eq sweeps were not converging
-sweep_options = {'n_sim',250,'n_seeds',15,'n_iters_max',200, 'numerical_precision',10, ...
+sweep_options = {'n_sim',1000,'n_seeds',15,'n_iters_max',200, 'numerical_precision',10, ...
                 'useParpool',1,'TauCycleTime',1,'downsample_output',ds_flag}; 
 %%   
 rate_index = find(strcmp(metric_names,'ProductionRate'));
@@ -59,10 +59,10 @@ ir_index = find(strcmp(metric_names,'IR'));
 % bs_vec = [1 2 3 4 5 1 1 1 1];
 % lc_vec = [1 1 1 1 1 1 2 3 4];
 % eq_vec = [1 1 1 1 1 0 0 0 0];
-bs_vec = [1];
-lc_vec = [4];
-eq_vec = [0];
-cw_vec = [10 1e2];
+bs_vec = [1 1];
+lc_vec = [4 3];
+eq_vec = [0 0];
+cw_vec = unique(round(logspace(0,2,25)));%[1 10 1e2];
 bs_vec_long = repelem(bs_vec,length(cw_vec));
 lc_vec_long = repelem(lc_vec,length(cw_vec));
 eq_vec_long = repelem(eq_vec,length(cw_vec));
@@ -88,7 +88,7 @@ for i = 1:length(bs_vec_long)
     if eq_flag
         suffix = '_eq';   
     end
-    suffix = [suffix '_w' sprintf('%04d',cw)];
+    suffix = [suffix '_w' sprintf('%04d',round(cw))];
     % save
     disp('saving...')
     saveName = saveNameCell{n_lc,n_b};
