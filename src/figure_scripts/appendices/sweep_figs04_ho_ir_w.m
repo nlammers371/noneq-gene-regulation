@@ -171,7 +171,7 @@ ir_match_lc = figure;
 neq_inds = find(~eq_flag_vec);
 
 hold on
-plot(linspace(0,0.04),linspace(0,0.04),'-.k','LineWidth',2)
+plot(linspace(0,0.05),linspace(0,0.05),'-.k','LineWidth',2)
 s = [];
 for i = length(neq_inds):-1:1
     nlc = nlc_val_vec(neq_inds(i));
@@ -188,6 +188,8 @@ set(gca,'FontSize',14)
 legend(s,'N_{LC}=2','N_{LC}=3','N_{LC}=4','N_{LC}=5','Location','southeast')
 set(gca,'Color',[228,221,209]/255) 
 
+ylim([0 0.05])
+xlim([0 0.05])
 
 ax = gca;
 ax.YAxis(1).Color = 'k';
@@ -276,7 +278,7 @@ saveas(ir_vs_r_fig,[FigPath 'ir_r_example_BS3.png'])
 
 cv_frac_vec = NaN(1,length(ref_struct));
 area_frac_vec = NaN(1,length(ref_struct));
-area_array = NaN(100,ref_struct(1).sweep_info.n_sim,length(ref_struct));
+area_array = NaN(250,250,length(ref_struct));
 
 for r = 1:length(ref_struct)
     cv_frac_vec(r) = mean(ref_struct(r).sweep_info.convergence_flag_vec);
@@ -292,7 +294,7 @@ for r = 1:length(ref_struct)
     end
     a_array_temp = a_array_temp ./ nanmax(a_array_temp(:));
     area_array(:,:,r) = a_array_temp;
-    area_frac_vec(r) = mean(a_array_temp(end,:)>=0.95);
+    area_frac_vec(r) = nansum(a_array_temp(end,:)>=0.95)/sum(~isnan(a_array_temp(end,:)));
 end    
     
     

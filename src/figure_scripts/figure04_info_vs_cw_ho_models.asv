@@ -113,7 +113,7 @@ for i = 1:length(master_struct_multi_bs)
         cw_vec_neq = cw_vec_neq(~nan_flags);
     %     if any(nan_flags)
 
-        cw_bound_raw = 10.^cw_index(1:end-1) + diff(10.^cw_index)/2;
+        cw_bound_raw = 10.^cw_index(1:end-1) + diff(10.^cw_index);
         cw_bound_f = sort([cw_bound_raw dt_cw_vec(end)]);
         ir_neq_sm_raw = imgaussfilt(ir_b_vec,2);
         ir_neq_sm_f = interp1(cw_bound_raw,ir_neq_sm_raw,cw_bound_f);
@@ -141,7 +141,7 @@ for i = 1:length(master_struct_multi_bs)
     end
     
     % smooth and interpolate to get value of interest
-    cw_bound_raw = 10.^cw_index(1:end-1) + diff(10.^cw_index)/2;
+    cw_bound_raw = 10.^cw_index(1:end-1) + diff(10.^cw_index);
     cw_bound_f = sort([cw_bound_raw dt_cw_vec(end)]);
     ir_eq_sm_raw = imgaussfilt(ir_b_vec_eq,2);
     ir_eq_sm_f = interp1(cw_bound_raw,ir_eq_sm_raw,cw_bound_f);
@@ -189,7 +189,7 @@ for i = 1:length(master_struct_multi_g)
         dt_b_vec(c) = dt_vec(cw_filter(mi));
     end
     
-    cw_bound_raw = 10.^cw_index(1:end-1) + diff(10.^cw_index)/2;
+    cw_bound_raw = 10.^cw_index(1:end-1) + diff(10.^cw_index);
     cw_bound_f = sort([cw_bound_raw dt_cw_vec(end)]);
     ir_neq_sm_raw = imgaussfilt(ir_b_vec,2);
     ir_neq_sm_f = interp1(cw_bound_raw,ir_neq_sm_raw,cw_bound_f);
@@ -513,13 +513,8 @@ saveas(dt_space_fig_g,[FigPath 'dt_vec_cw_g.png'])
 saveas(dt_space_fig_g,[FigPath 'dt_vec_cw_g.pdf'])
 
 %% extract some useful numbers
-ind = find(cw_bound_f==dt_cw_vec(end));
-nb1na1EQ = master_struct_multi_bs(1).dt_boundary_eq(ind)
-nb1na1NEQ = master_struct_multi_g(1).dt_boundary(ind)
-nb5na1EQ = master_struct_multi_bs(5).dt_boundary_eq(ind)
-nb5na1NEQ = master_struct_multi_bs(5).dt_boundary(ind)
-nb1na2NEQ = master_struct_multi_g(2).dt_boundary(ind)
-nb1na3NEQ = master_struct_multi_g(3).dt_boundary(ind)
+ind = find(
+nb1na1 = 
 
 %% look at trend with BS in equilibrium
 close all
