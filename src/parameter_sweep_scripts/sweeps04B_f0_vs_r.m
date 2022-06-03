@@ -18,7 +18,7 @@ eq_only_flag = 0;
 neq_only_flag = 0;
 % Set Dropbox directory
 DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
-writePath = [DropboxFolder filesep 'sweeps04_s0_vs_f0_prec12' filesep];
+writePath = [DropboxFolder filesep 'sweeps04B_f_vs_r_prec12' filesep];
 mkdir(writePath);
 
 % this contains paths used to address correct functions
@@ -72,7 +72,7 @@ for m = [4:-1:1]%1:length(n_g_vec)-1
         tic
 
         [sim_info, sim_results_long, sim_results] = ...
-                            param_sweep_multi_v3([s0_index f0_index],...
+                            param_sweep_multi_v3([rate_index f0_index],...
                             functionPathCell{m,n}, sweep_options{:},'cw',cw_val);
         if ~ds_flag
             sim_results = sim_results_long;

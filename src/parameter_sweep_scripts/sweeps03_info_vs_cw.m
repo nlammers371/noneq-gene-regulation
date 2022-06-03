@@ -13,7 +13,7 @@ ds_flag = 1;
 
 % Set Dropbox directory
 DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
-writePath = [DropboxFolder filesep 'sweeps03_info_vs_cw_rerun' filesep];
+writePath = [DropboxFolder filesep 'sweeps03_info_vs_cw_cb' filesep];
 mkdir(writePath);
 
 % this contains paths used to address correct functions
@@ -55,13 +55,13 @@ ir_index = find(strcmp(metric_names,'IR'));
         
 
 for equilibrium_flag = 0
-    for m = 1:4
+    for m = 1
 %         if false%m == 1
 %             bs_list = 1:5;
 %         else
 %             bs_list = 2:5;
 %         end
-        for n = 1
+        for n = 5
             % call sweep function
             tic
             [sim_info, sim_results, sim_results_short] = ...
