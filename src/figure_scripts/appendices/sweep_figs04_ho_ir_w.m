@@ -173,7 +173,8 @@ ir_match_lc = figure;
 neq_inds = find(~eq_flag_vec&nb_val_vec==1);
 
 hold on
-plot(linspace(0,0.05),linspace(0,0.05),'-.k','LineWidth',2)
+% plot(linspace(0,0.05),linspace(0,0.05),'-.k','LineWidth',2)
+plot(logspace(-5,-1),logspace(-5,-1),'-.k','LineWidth',2)
 s = [];
 for i = length(neq_inds):-1:1
     nlc = nlc_val_vec(neq_inds(i));
@@ -191,8 +192,13 @@ set(gca,'FontSize',14)
 legend(s,'N_{A}=1','N_{A}=2','N_{A}=3','N_{A}=4','Location','southeast')
 set(gca,'Color',[228,221,209]/255) 
 
-ylim([0 0.05])
-xlim([0 0.05])
+set(gca,'yscale','log')
+set(gca,'xscale','log')
+
+% ylim([0 0.05])
+% xlim([0 0.05])
+ylim([3e-4 0.1])
+xlim([3e-4 0.1])
 
 ax = gca;
 ax.YAxis(1).Color = 'k';
@@ -201,8 +207,8 @@ ax.XAxis(1).Color = 'k';
 
 ir_match_lc.InvertHardcopy = 'off';
 set(gcf,'color','w');      
-saveas(ir_match_lc,[FigPath 'ir_w_scatter_LC.png'])   
-saveas(ir_match_lc,[FigPath 'ir_w_scatter_LC.pdf']) 
+saveas(ir_match_lc,[FigPath 'ir_w_scatter_NA.png'])   
+saveas(ir_match_lc,[FigPath 'ir_w_scatter_NA.pdf']) 
 
 %% 
         
@@ -210,17 +216,30 @@ ir_match_bs = figure;
 eq_inds = find(eq_flag_vec|nb_val_vec==5);
 
 hold on
-plot(linspace(0,0.25),linspace(0,0.25),'-.k','LineWidth',2)
+plot(logspace(-5,0),logspace(-5,0),'-.k','LineWidth',2)
+% plot(linspace(0,0.25),linspace(0,0.25),'-.k','LineWidth',2)
 s = [];
-for i = length(eq_inds):-1:1
+for i = 1:length(eq_inds)%:-1:1
     nb = nb_val_vec(eq_inds(i));
+    eq_flag = eq_flag_vec(eq_inds(i));
     wi = find(w_val_vec(eq_inds(i))==w_vec);
-    s(nb) = scatter(max_ir_vec(eq_inds(i)),full_sweep_ir_vals(eq_inds(i)),75,sym_cell{wi},...
-            'MarkerFaceColor',cmap_full(nb,:),'MarkerEdgeColor','k','MarkerFaceAlpha',1,'MarkerEdgeAlpha',1);
+    if eq_flag
+        sb = scatter(max_ir_vec(eq_inds(i)),full_sweep_ir_vals(eq_inds(i)),75,sym_cell{wi},...
+                'MarkerFaceColor',cmap_full(nb,:),'MarkerEdgeColor','k','MarkerFaceAlpha',1,'MarkerEdgeAlpha',1);
+        if w_val_vec(eq_inds(i))==10
+            s(end+1) = sb;
+        end
+    else
+        sb = scatter(max_ir_vec(eq_inds(i)),full_sweep_ir_vals(eq_inds(i)),100,sym_cell{wi},...
+                'MarkerEdgeColor',brighten(cmap_full(nb,:),-0.5),'LineWidth',2,'MarkerEdgeAlpha',1);
+    end
 end
 
 xlabel('maximum IR value (IR vs. r)');
 ylabel('maximum IR value (IR vs. w)');
+
+set(gca,'yscale','log')
+set(gca,'xscale','log')
 
 grid on
 set(gca,'FontSize',14)
@@ -236,8 +255,8 @@ ax.XAxis(1).Color = 'k';
 
 ir_match_bs.InvertHardcopy = 'off';
 set(gcf,'color','w');      
-saveas(ir_match_bs,[FigPath 'ir_w_scatter_BS.png'])   
-saveas(ir_match_bs,[FigPath 'ir_w_scatter_BS.pdf']) 
+saveas(ir_match_bs,[FigPath 'ir_w_scatter_NB.png'])   
+saveas(ir_match_bs,[FigPath 'ir_w_scatter_NB.pdf']) 
 
 %% Make illustrative figure of rate vs IR
 
@@ -282,7 +301,7 @@ saveas(ir_vs_r_fig,[FigPath 'ir_r_example_BS3.png'])
 
 cv_frac_vec = NaN(1,length(ref_struct));
 area_frac_vec = NaN(1,length(ref_struct));
-area_array = NaN(250,250,length(ref_struct));
+area_array = NaN(250,1000,length(ref_struct));
 
 for r = 1:length(ref_struct)
     cv_frac_vec(r) = mean(ref_struct(r).sweep_info.convergence_flag_vec);
@@ -301,5 +320,5 @@ for r = 1:length(ref_struct)
     area_frac_vec(r) = nansum(a_array_temp(end,:)>=0.95)/sum(~isnan(a_array_temp(end,:)));
 end    
     
-    
-    
+mean(area_frac_vec)    
+mean(cv_frac_vec)    
