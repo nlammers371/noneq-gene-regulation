@@ -13,7 +13,7 @@ networkInfo = generateBaselineSixStateNetwork;
 
 % generate prefix for function directory 
 folder_prefix = 'n004_s01_ns00_g01';
-writePath = [rootPath folder_prefix filesep];
+writePath = [rootPath folder_prefix];
 mkdir(writePath)
 
 % helper vector
@@ -87,10 +87,10 @@ ssVecSym = ssVecSym';
 syms cr positive % cw a
 
 % initialize baseline reaction rates
-syms ki ka ku kb positive
+syms ki ka km kp positive
 
 % initialize interaction terms
-syms wab wib wba wua positive
+syms wap wip wpa wma positive
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % full steady state vector 

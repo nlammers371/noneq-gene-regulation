@@ -72,16 +72,16 @@ function networkInfo = generateBaselineSixStateNetwork
     syms cr cw a positive
 
     % initialize baseline reaction rates
-    syms ki ka km kp positive
+    syms ki ka ku kb positive
 
     % initialize interaction terms
-    syms wap wip wpa wma positive
+    syms wab wib wba wua positive
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % specify var order, var bounds, and whether it can be swept by default
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     networkInfo = struct;
-    networkInfo.sweepVarList = [cr cw a ki ka kp km wap wip wma wpa];
+    networkInfo.sweepVarList = [cr cw a ki ka kb ku wab wib wua wba];
     networkInfo.sweepVarStrings = cellstr(string(networkInfo.sweepVarList));
     networkInfo.defaultValues = [1 1 100 1 1 1 1 1 1 1 1];
     networkInfo.sweepFlags = [0 0 0 1 1 1 1 1 1 1 1]==1;      
@@ -91,17 +91,17 @@ function networkInfo = generateBaselineSixStateNetwork
     networkInfo.a_index = 3;
 
     % add constraints to ensure activating behavior
-    wip_index = strcmp(networkInfo.sweepVarStrings,'wip');
-    networkInfo.paramBounds(2,wip_index) = 0;
+    wib_index = strcmp(networkInfo.sweepVarStrings,'wib');
+    networkInfo.paramBounds(2,wib_index) = 0;
     
-    wap_index = strcmp(networkInfo.sweepVarStrings,'wap');
-    networkInfo.paramBounds(1,wap_index) = 0;
+    wab_index = strcmp(networkInfo.sweepVarStrings,'wab');
+    networkInfo.paramBounds(1,wab_index) = 0;
     
     % Provide info for equilibrium constraint application and cycle flux
     % calculations
-    networkInfo.forwardRateConstants = [wap wma];
+    networkInfo.forwardRateConstants = [wab wua];
     networkInfo.forwardRateIndices = {find(ismember(networkInfo.sweepVarList,networkInfo.forwardRateConstants))};
-    networkInfo.backwardRateConstants = [wip wpa];
+    networkInfo.backwardRateConstants = [wib wba];
     networkInfo.backwardRateIndices = {find(ismember(networkInfo.sweepVarList,networkInfo.backwardRateConstants))};
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -111,18 +111,18 @@ function networkInfo = generateBaselineSixStateNetwork
     RSym = sym(zeros(baseNum));
 
     % basic binding and unbinding rates
-    RSym(ismember(transitionInfoArray,[1,2]) & ~activity_vec_full) = kp;
-    RSym(ismember(transitionInfoArray,[1,2]) & activity_vec_full) = kp*wpa;
+    RSym(ismember(transitionInfoArray,[1,2]) & ~activity_vec_full) = kb;
+    RSym(ismember(transitionInfoArray,[1,2]) & activity_vec_full) = kb*wba;
 
-    RSym(ismember(transitionInfoArray,-[1,2]) & ~activity_vec_full) = km;
-    RSym(ismember(transitionInfoArray,-[1,2]) & activity_vec_full) = km*wma;
+    RSym(ismember(transitionInfoArray,-[1,2]) & ~activity_vec_full) = ku;
+    RSym(ismember(transitionInfoArray,-[1,2]) & activity_vec_full) = ku*wua;
 
     % basic locus fluctuation rates
     RSym(ismember(transitionInfoArray,3) & n_total_bound==0) = ka;
-    RSym(ismember(transitionInfoArray,3) & n_total_bound==1) = ka*wap;
+    RSym(ismember(transitionInfoArray,3) & n_total_bound==1) = ka*wab;
 
     RSym(ismember(transitionInfoArray,-3) & n_total_bound==0) = ki;
-    RSym(ismember(transitionInfoArray,-3) & n_total_bound==1) = ki*wip;
+    RSym(ismember(transitionInfoArray,-3) & n_total_bound==1) = ki*wib;
 
     % add specificity and concentration factors
     RSym(transitionInfoArray==1) = RSym(transitionInfoArray==1)*cr;

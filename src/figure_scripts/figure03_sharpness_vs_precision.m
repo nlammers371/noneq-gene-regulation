@@ -22,7 +22,8 @@ markerSize = 100; % marker size
 sweep_options = {'n_sim',5,'n_seeds',5,'n_iters_max',50};
 
 nStates = 4;
-functionPath = ['../utilities/metricFunctions/n' num2str(nStates) '_OR/'];
+% functionPath = ['../utilities/metricFunctions/n' num2str(nStates) '_OR/'];
+functionPath = '../utilities/metricFunctions/symbolic/n004_s01_ns00_g01';
 
 % get metric names 
 [~,~,metric_names_sym] = calculateMetricsSym_v2([]);
@@ -68,7 +69,7 @@ plot_filter_eq = sharpness_vec_eq>=0;
 plot_indices_eq = randsample(find(plot_filter_eq),n_plot,true);
 
 
-% find best neq IR systems
+%% find best neq IR systems
 rng(123);
 n_ir = 100;
 ir_thresh = 0.99*nanmax(ir_vec_neq);
@@ -132,7 +133,7 @@ ylim([0 1.2])
 xlim([0 2.2])
 
 saveas(sharp_v_prec_4_sc,[FigPath 'sharp_vs_prec4_sc.png'])
-% % saveas(sharp_v_prec_4_sc,[FigPath 'sharp_vs_prec4_sc.pdf'])    
+saveas(sharp_v_prec_4_sc,[FigPath 'sharp_vs_prec4_sc.pdf'])    
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

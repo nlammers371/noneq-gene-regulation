@@ -1,5 +1,7 @@
-% This script seeks to recRSym(eye(size(RSym,1))==1)apitulate calculations previously undertaken in
-% mathematica natively in matlab
+% This script seeks to builds symbolic functions to calculate gene circuit
+% performance characteristics for the 6 state system shown in Main Text
+% Figure 4B. Note that it generally takes 20-60 minutes to run due to the
+% complexity of the symbolic manipulations performed
 clear
 close all
 
@@ -12,25 +14,25 @@ rootPath = handlePathOptions(subfolderName);
 networkInfo = generateBaselineSixStateNetwork;
 
 % generate prefix for function directory 
-folder_prefix = 'n004_s01_ns00_g01';
+folder_prefix = 'n006_s01_ns01_g01';
 writePath = [rootPath folder_prefix filesep];
 mkdir(writePath)
 
 % helper vector
-RSym6 = networkInfo.RSym;
+RSym = networkInfo.RSym;
 
 % designate parameters for 4 state network
-nStates = 4;
+nStates = 6;
 stateIndex = 1:nStates;
-activeStates = [3 4];
+activeStates = [3 4 5];
 
-RSymFull = RSym6;
-RSym = RSym6(1:nStates,1:nStates);
-% RSymWrong = RSymFull([1 6 5 4],[1 6 5 4]);
-
-% add diagonal factors 
-RSym(eye(size(RSym,1))==1) = 0;
-RSym(eye(size(RSym,1))==1) = -sum(RSym);
+% RSym = RSym;
+% RSym = RSym6(1:nStates,1:nStates);
+% % RSymWrong = RSymFull([1 6 5 4],[1 6 5 4]);
+% 
+% % add diagonal factors 
+% RSym(eye(size(RSym,1))==1) = 0;
+% RSym(eye(size(RSym,1))==1) = -sum(RSym);
 % RSymWrong(eye(size(RSymWrong,1))==1) = -sum(RSymWrong);
 
 % save
@@ -51,25 +53,27 @@ networkInfo.n_total_bound = networkInfo.n_total_bound(1:nStates);
 networkInfo.activeStateFilter = networkInfo.activeStateFilter(1:nStates);
 
 % update key fields
-rightVarFlags = ~ismember(1:11,2:3);
-networkInfo.sweepVarList = networkInfo.sweepVarList(rightVarFlags);
-networkInfo.sweepVarStrings = networkInfo.sweepVarStrings(rightVarFlags);
-networkInfo.defaultValues = networkInfo.defaultValues(rightVarFlags);
-networkInfo.sweepFlags = networkInfo.sweepFlags(rightVarFlags);
-networkInfo.paramBounds = networkInfo.paramBounds(rightVarFlags);
-networkInfo = rmfield(networkInfo,{'a_index','cw_index'});
-networkInfo.forwardRateIndices{1} = networkInfo.forwardRateIndices{1} - 2;
-networkInfo.backwardRateIndices{1} = networkInfo.backwardRateIndices{1} - 2;
+keepVarFlags = true(1,11);
+networkInfo.sweepVarList = networkInfo.sweepVarList(keepVarFlags);
+networkInfo.sweepVarStrings = networkInfo.sweepVarStrings(keepVarFlags);
+networkInfo.defaultValues = networkInfo.defaultValues(keepVarFlags);
+networkInfo.sweepFlags = networkInfo.sweepFlags(keepVarFlags);
+networkInfo.paramBounds = networkInfo.paramBounds(keepVarFlags);
+% networkInfo = rmfield(networkInfo,{'a_index','cw_index'});
+networkInfo.forwardRateIndices{1} = networkInfo.forwardRateIndices{1};
+networkInfo.backwardRateIndices{1} = networkInfo.backwardRateIndices{1};
 networkInfo.RSym = RSym;
 save([writePath 'networkInfo'],'networkInfo');       
         
 %% %%%%%%%%% derive expressions for production rate and sharpness %%%%%%%%%%
 
-[V,D] = eig(RSym);
-DLog = logical(D==0);
-ssInd = find(all(DLog));
-ssVecSym = V(:,ssInd) / sum(V(:,ssInd));
-ssVecSym = ssVecSym';
+ssVecSym = sixStateSSFromMathematica_v2;
+
+% [V,D] = eig(RSym);
+% DLog = logical(D==0);
+% ssInd = find(all(DLog));
+% ssVecSym = V(:,ssInd) / sum(V(:,ssInd));
+% ssVecSym = ssVecSym';
 
 % same for wrong network
 % [VW,DW] = eig(RSymWrong);
@@ -84,7 +88,7 @@ ssVecSym = ssVecSym';
 % end
 
 % initialize core rate multiplier variables
-syms cr positive % cw a
+syms cr cw a positive % cw a
 
 % initialize baseline reaction rates
 syms ki ka ku kb positive
@@ -93,7 +97,7 @@ syms ki ka ku kb positive
 syms wab wib wba wua positive
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% full steady state vector 
+%% full steady state vector 
 matlabFunction(ssVecSym,'File',[writePath 'steadyStateVecFunction'],'Optimize',true,'Vars',networkInfo.sweepVarList);
 
 % production rate
