@@ -10,7 +10,8 @@ paramBounds = repmat([-5 ; 5],1,11); % constrain transition rate magnitude
 [~,~,metric_names] = calculateMetricsSym_v2([]);
 
 % specify function path
-functionPath = ['../utilities/metricFunctions/n' num2str(nStates) '_OR/'];
+% functionPath = ['../utilities/metricFunctions/n' num2str(nStates) '_OR/'];
+functionPath = '../utilities/metricFunctions/symbolic/n006_s01_ns01_g01';
 
 % make sure we're linked to the appropriate function subfolder% make sure we're linked to the appropriate function subfolder
 rmpath(genpath('../utilities/metricFunctions/'));
@@ -49,11 +50,11 @@ bit_factor = log2(exp(1));
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%% info vs cw %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 tic
 [sim_info_neq, sim_struct_neq] = param_sweep_multi_v3([ir_index cw_index],functionPath,sweep_options{:},...
-                                          'half_max_flag',false,'TauCycleTime',TauCycleTime,...
+                                          'TauCycleTime',TauCycleTime,...
                                           'equilibrium_flag',false,'specFactor',alpha_factor,'paramBounds',paramBounds);
 
 [sim_info_eq, sim_struct_eq] = param_sweep_multi_v3([ir_index cw_index],functionPath,sweep_options{:},...
-                                          'half_max_flag',false,'TauCycleTime',TauCycleTime,...
+                                          'TauCycleTime',TauCycleTime,...
                                           'equilibrium_flag',true,'specFactor',alpha_factor,'paramBounds',paramBounds);                                        
 toc     
 
@@ -127,7 +128,7 @@ ylabel('information rate (bits per cycle)')
 grid on
 set(gca,'FontSize',14)
 set(gca,'Color',[228,221,209]/255) 
-set(gca,'xtick',[1 alpha_factor alpha_factor^2 alpha_factor^3 alpha_factor^4]);%,'xticklabels',{'\alpha^0','\alpha^1','\alpha^{2}','\alpha^3','\alpha^4'})
+set(gca,'xtick',[1 10 100 10^3 10^4 10^5]);%,'xticklabels',{'\alpha^0','\alpha^1','\alpha^{2}','\alpha^3','\alpha^4'})
 ax = gca;
 ax.YAxis(1).Color = 'k';
 ax.XAxis(1).Color = 'k';
@@ -149,8 +150,8 @@ occ_vec_eq = 100./cw_axis;
 plot(cw_axis,(occ_vec_eq./(occ_vec_eq+1)).^2.*ir_eq*4,'-.','LineWidth',2,'Color',brighten(cmap(2,:),-0.65))
 plot(cw_axis,(occ_vec_eq./(occ_vec_eq+1)).^2.*ir_eq,'-.','LineWidth',2,'Color',brighten(cmap(3,:),-0.65))
 
-saveas(ir_vs_cw_eq_fig,[FigPath 'IR_vs_cw_with_bounds.png'])
-saveas(ir_vs_cw_eq_fig,[FigPath 'IR_vs_cw_with_bounds.pdf'])
+% saveas(ir_vs_cw_eq_fig,[FigPath 'IR_vs_cw_with_bounds.png'])
+% saveas(ir_vs_cw_eq_fig,[FigPath 'IR_vs_cw_with_bounds.pdf'])
 
 
 

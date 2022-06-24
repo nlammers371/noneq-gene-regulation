@@ -1,6 +1,6 @@
 function a11Sym = a11FunFromMathematica_v2
 
-syms cr cw b kmi kma kpi kpa kap kam kip kim positive
+syms cr cw a kb ku ki ka wab wib wba wua positive
 
 a11Sym = (1/2).*(b.*cr.^2.*kap.^2.*kma.*kpa.*kpi+cr.*cw.*kap.^2.*kma.*kpa.* ...
   kpi+b.*cr.*cw.*kap.^2.*kma.*kpa.*kpi+cw.^2.*kap.^2.*kma.*kpa.*kpi+( ...

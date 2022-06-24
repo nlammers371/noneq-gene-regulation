@@ -80,6 +80,7 @@ cw_vec_neq = 10.^metric_array_neq(:,cw_index);
 sharp_vec_neq = metric_array_neq(:,sharpness_index);
 rate_array_neq = vertcat(sim_struct_neq.rate_array);
 
+
 metric_array_eq0 = vertcat(sim_struct_eq0.metric_array);
 cw_vec_eq0 = 10.^metric_array_eq0(:,cw_index);
 sharp_vec_eq0 = metric_array_eq0(:,sharpness_index);

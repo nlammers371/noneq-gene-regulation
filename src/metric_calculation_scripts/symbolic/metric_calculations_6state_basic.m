@@ -116,35 +116,36 @@ sharpnessFun = matlabFunction(sharpnessSym,'File',[writePath 'sharpnessFunction'
 % sharpnessRightSym = diff(ssVecSym(activeStatesFull(1:2)),cr);
 % matlabFunction(sharpnessRightSym,'File',[writePath 'sharpnessRightFunction'],'Optimize',true,'Vars',networkInfo.sweepVarList);
 
-%%% %%%%%%%%%%%%%%%%%%%%%%%% Half max constraints %%%%%%%%%%%%%%%%%%%%%%%%%%
-% for the 4 state case we can do everything in matlab 
-% hmPath = [writePath 'HM_Functions' filesep];
+%% %%%%%%%%%%%%% HM calculations 
+
+hmPath = [writePath 'HMFunctions' filesep];
 % mkdir(hmPath);
-% 
-% rate_pairs = [kpi, kpa; kmi, kma; kim, kip; kam kap];
-% % rate_index_pairs = [3, 6; 1, 8; 2, 4; 7, 5];
-% hmStruct = struct;
-% syms a positive;
-% 
-% for r = 1:size(rate_pairs,1)
-%     tic
-%     % construct equation to be solved
-%     hmSys = productionRateSym == 0.5;
-%     hmSys = subs(hmSys,rate_pairs(r,1),rate_pairs(r,1)*a);
-%     hmSys = subs(hmSys,rate_pairs(r,2),rate_pairs(r,2)*a);
-%     hmSol = solve(hmSys,a,'ReturnConditions',true);    
-%     
-%     fNames = fieldnames(hmSol);
-%     for j = 1:2
-%         matlabFunction(hmSol.a(j),'File',[hmPath 'hmFun' num2str(r) num2str(j)],'Optimize',true,'Vars',networkInfo.sweepVarList);
-%         matlabFunction(hmSol.conditions(j),'File',[hmPath 'conditionsFun' num2str(r) num2str(j)],'Optimize',true,'Vars',networkInfo.sweepVarList);
-%     end
-%     hmStruct(r).output_pair = rate_pairs(r,:);
-%     hmStruct(r).output_indices = find(ismember(networkInfo.sweepVarList,rate_pairs(r,:)));
-%     toc
-% end
-% 
-% save([hmPath 'hmStruct.mat'],'hmStruct');
+addpath(hmPath);
+hmStruct = struct;
+rate_vec = [kb ; ku ; ki ; ka]; 
+sym_cell = {'b','u','i','a'};
+
+for i = 1:4
+    tic
+    nFun = 3;
+    if i == 1 || i == 2
+        nFun = 2;
+    end
+    for j = 1:nFun
+        numStr = num2str(j);
+        try        
+            eval(['m' sym_cell{i} numStr 'Sym = m' sym_cell{i} numStr 'FunFromMathematica;'])
+            writePathFull = [hmPath 'm' sym_cell{i} numStr 'SymFun'];
+            eval(['matlabFunction(m' sym_cell{i} numStr 'Sym,"File",writePathFull,"Optimize",true,"Vars",networkInfo.sweepVarList);'])
+        catch
+            disp(['error in ' numStr])
+        end
+    end
+    hmStruct(i).output_pair = rate_vec(i,:);
+    hmStruct(i).output_indices = find(ismember(networkInfo.sweepVarList,rate_vec(i,:)));
+    toc
+end
+save([hmPath 'hmStruct.mat'],'hmStruct')
 
 %%
 % generate and solve systems of equations for expected first passage time
@@ -271,6 +272,7 @@ solVecOFF = struct2array(eqSolOFF);
 inFluxVecON = RSym(onStateFilter,~onStateFilter) * ssVecSym(~onStateFilter)';
 ETOFFMean = (solVecOFF*inFluxVecON) / sum(inFluxVecON);
 ETOFFFun = matlabFunction(ETOFFMean,'File',[writePath 'TauONFunction'],'Optimize',true,'Vars',networkInfo.sweepVarList);
+
 
 %%% Cycle Time %%%
 TauCycleFun = matlabFunction(ETONMean+ETOFFMean,'File',[writePath 'TauCycleFunction'],'Optimize',true,'Vars',networkInfo.sweepVarList);

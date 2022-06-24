@@ -10,7 +10,7 @@ if ~isempty(param_array)
     w_flags = contains(simInfo.sweepVarStrings,'w')|strcmp(simInfo.sweepVarStrings,'a')|strcmp(simInfo.sweepVarStrings,'cw');
     sweepFlags = simInfo.sweepFlags;  
     paramBounds = simInfo.paramBounds;  
-    paramBoundsRel = paramBounds(:,sweepFlags&~w_flags); % indicates variables to adjust with tau_c
+%     paramBoundsRel = paramBounds(:,sweepFlags&~w_flags); % indicates variables to adjust with tau_c
     
     % calculate cycle time    
     TauOn = TauONFunction(paramCell{:});
@@ -78,7 +78,7 @@ if ~isempty(param_array)
 %         fourFlags = simInfo.fourStateInputFlags;        
         temp_array = param_array;
         temp_array(:,simInfo.cw_index) = 1e-10;
-        temp_array(:,simInfo.b_index) = 1e10;
+        temp_array(:,simInfo.a_index) = 1e10;
 
 %         valCellCSFour = mat2cell(param_array(:,fourFlags),size(param_array,1),ones(1,size(param_array(:,fourFlags),2)));    
         valCellCSFour = mat2cell(temp_array,size(temp_array,1),ones(1,size(temp_array,2)));    
@@ -91,14 +91,14 @@ if ~isempty(param_array)
         SharpnessRightNorm = SharpnessRight ./ (ProductionRateRight.*(1-ProductionRateRight));
        
         % wrong cycle
-        fourWrongFlags = simInfo.fourStateWrongInputFlags;
-        valCellCSFourWrong = mat2cell(param_array(:,fourWrongFlags),size(param_array,1),ones(1,size(param_array(:,fourWrongFlags),2)));    
-        ProductionRateWrong = productionRateWrongFunctionFourState(valCellCSFourWrong{:});
+%         fourWrongFlags = simInfo.fourStateWrongInputFlags;
+%         valCellCSFourWrong = mat2cell(param_array(:,fourWrongFlags),size(param_array,1),ones(1,size(param_array(:,fourWrongFlags),2)));    
+%         ProductionRateWrong = productionRateWrongFunctionFourState(valCellCSFourWrong{:});
         
         % inter-network
-        specFactorAlt = log10((ProductionRateRight./ProductionRateWrong)./(simInfo.specFactor/simInfo.cw));
-        deviationFactor = sharpnessWrongFunction(paramCell{:});
-        deviationFactor = 1./deviationFactor;
+%         specFactorAlt = log10((ProductionRateRight./ProductionRateWrong)./(simInfo.specFactor/simInfo.cw));
+%         deviationFactor = sharpnessWrongFunction(paramCell{:});
+%         deviationFactor = 1./deviationFactor;
         
         % intra-network             
         right_flags = simInfo.n_right_bound.*simInfo.activeStateFilter;
@@ -156,10 +156,10 @@ if ~isempty(param_array)
     PrecisionRawOut = log(TauCycle./Variance);      
       
     metric_vec = [ProductionRate, Sharpness, SharpnessRaw, fe_drop, PrecisionOut,PrecisionRawOut,...                
-                  Phi, TauCycle,specificityFactor,deviationFactor,ProductionRateRight,...                            
+                  Phi, TauCycle,specificityFactor,ProductionRateRight,...                            
                   SharpnessRight, SharpnessRightNorm, ...
                   V.*TauCycle,1./T,R,...                  
-                  TauOn,TauOff,specFactorAlt,AffinityVec,log10(cwVec),...
+                  TauOn,TauOff,AffinityVec,log10(cwVec),...
                   stateEntropyVec,rate_entropy_vec,p3Right,p3Wrong,log(TauCycle./VariancePoisson),IRPoisson.*TauCycle,SharpnessRightAlt];
         
     % Apply QC controls
@@ -176,10 +176,10 @@ else
 end
 
 metric_names = {'Production Rate','Sharpness','SharpnessRaw','Flux','Precision','PrecisionRaw',...
-                'Phi', 'CycleTime','Specificity','deviationFactor','ProductionRateRight',...
+                'Phi', 'CycleTime','Specificity','ProductionRateRight',...
                 'SharpnessRight','SharpnessRightNorm',...
                 'DecisionRateNorm','DecisionTimeNorm','ProductionBinary',...
-                'TauOn','TauOff','specFactorAlt','AffinityVec','CW','stateEntropy','rateEntropy','p3Right','p3Wrong',...
+                'TauOn','TauOff','AffinityVec','CW','stateEntropy','rateEntropy','p3Right','p3Wrong',...
                 'PrecisionPoisson','DecisionRatePoisson','SharpnessRightAlt'};
 
 % specify default bounds
