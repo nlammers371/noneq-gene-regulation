@@ -478,7 +478,7 @@ xlabel('number of binding sites');
 
 grid on
 box on
-set(gca,'xtick',2:5)
+set(gca,'xtick',1:5)
 set(gca,'FontSize',14)
 set(gca,'Color',[228,221,209]/255) 
 
