@@ -5,11 +5,14 @@ addpath(genpath('../utilities/'))
 
 % set basic parameters
 nStates = 6;
-paramBounds = repmat([-10 ; 6],1,3*nStates-4); % constrain transition rate magnitude
+paramBounds = repmat([-5 ; 5],1,11); % constrain transition rate magnitude
+paramBounds(1,8) = 0; % ensures activation
+paramBounds(2,9) = 0; % ensures activation
 [~,~,metric_names] = calculateMetricsSym_v2([]);
 
 % specify function path
-functionPath = ['../utilities/metricFunctions/n' num2str(nStates) '_OR/'];
+% functionPath = ['../utilities/metricFunctions/n' num2str(nStates) '_OR/'];
+functionPath = '../utilities/metricFunctions/symbolic/n006_s01_ns01_g01';
 
 % make sure we're linked to the appropriate function subfolder% make sure we're linked to the appropriate function subfolder
 rmpath(genpath('../utilities/metricFunctions/'));
@@ -20,7 +23,7 @@ addpath(genpath(functionPath));
 DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\Nonequilibrium\Nick\manuscript\';
 % DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\manuscript\';
 
-FigPath = [DropboxFolder 'experimental_signatures_v2' filesep];
+FigPath = [DropboxFolder 'experimental_signatures' filesep];
 mkdir(FigPath);         
 
 % get index of useful metrics
@@ -58,7 +61,7 @@ tic
 toc     
 
 
-seq = 1/4;
+% seq = 1/4;
 cr = 1;
 
 %% Generate bound predictions
@@ -161,44 +164,52 @@ saveas(motif_fig,[FigPath 'sharpness_vs_cw_scatter_lines.pdf'])
 %% Plot naive and actual sharpness bounds at reasonable cw level
 cw_true = 1e3;
 cw_naive = 1e-2; % doesn't matter so long as leq 1
-
+sweep_options = {'n_seeds',5,'n_iters_max',50,'n_sim',50,'nStates',nStates};
 % "true" simulations
 tic
 [sim_info_neq, sim_struct_neq] = param_sweep_multi_v3([sharpness_index precision_index],functionPath,sweep_options{:},...
-                                          'half_max_flag',true,'cw',cw_true,...
-                                          'equilibrium_flag',false,'specFactor',alpha_factor);
+                                          'half_max_flag',false,'cw',cw_true,...
+                                          'equilibrium_flag',false,'specFactor',alpha_factor,'paramBounds',paramBounds);    
 
 [sim_info_eq, sim_struct_eq] = param_sweep_multi_v3([sharpness_index precision_index],functionPath,sweep_options{:},...
-                                          'half_max_flag',true,'cw',cw_true,...
-                                          'equilibrium_flag',true,'specFactor',alpha_factor);                                        
+                                          'half_max_flag',false,'cw',cw_true,...
+                                          'equilibrium_flag',true,'specFactor',alpha_factor,'paramBounds',paramBounds);                                    
 toc     
 
 
 % now ask what happens when we neglect to account for CW
 [sim_info_eq_naive, sim_struct_eq_naive] = param_sweep_multi_v3([sharpness_index precision_index],functionPath,sweep_options{:},...
-                                          'half_max_flag',true,'cw',cw_naive,...
-                                          'equilibrium_flag',true,'specFactor',alpha_factor);    
+                                          'half_max_flag',false,'cw',cw_naive,...
+                                          'equilibrium_flag',true,'specFactor',alpha_factor,'paramBounds',paramBounds);        
 
 close all
+%%
+rate_bounds = [0.49 0.51];%-0.25;
 
 % Calculate titration curve for each scenario
 rmpath(genpath('../utilities/metricFunctions/'));
 addpath(genpath(functionPath));
 
 % extract metric arrays
-metric_array_neq = vertcat(sim_struct_neq.metric_array);
-metric_array_eq = vertcat(sim_struct_eq.metric_array);
-metric_array_eq_naive = vertcat(sim_struct_eq_naive.metric_array);
+metric_array_neq = sim_struct_neq.metric_array;
+rate_vec_neq = metric_array_neq(:,rate_index);
+hm_filter_neq = rate_vec_neq>=rate_bounds(1)&rate_vec_neq<=rate_bounds(2);
+metric_array_eq = sim_struct_eq.metric_array;
+rate_vec_eq = metric_array_eq(:,rate_index);
+hm_filter_eq = rate_vec_eq>=rate_bounds(1)&rate_vec_eq<=rate_bounds(2);
+metric_array_eq_naive = sim_struct_eq_naive.metric_array;
+rate_vec_eq_naive = metric_array_eq_naive(:,rate_index);
+hm_filter_eq_naive = rate_vec_eq_naive>=rate_bounds(1)&rate_vec_eq_naive<=rate_bounds(2);
 
-% rate arrays
+%% rate arrays
 rate_array_neq = vertcat(sim_struct_neq.rate_array);
 rate_array_eq = vertcat(sim_struct_eq.rate_array);
 rate_array_eq_naive = vertcat(sim_struct_eq_naive.rate_array);
 
 % identify sharpest networks
-[max_s_neq,max_s_i_neq] = nanmax(metric_array_neq(:,sharpness_index));
-[max_s_eq,max_s_i_eq] = nanmax(metric_array_eq(:,sharpness_index));
-[max_s_eq_naive,max_s_i_eq_naive] = nanmax(metric_array_eq_naive(:,sharpness_index));
+[max_s_neq,max_s_i_neq] = nanmax(metric_array_neq(:,sharpness_index).*hm_filter_neq);
+[max_s_eq,max_s_i_eq] = nanmax(metric_array_eq(:,sharpness_index).*hm_filter_eq);
+[max_s_eq_naive,max_s_i_eq_naive] = nanmax(metric_array_eq_naive(:,sharpness_index).*hm_filter_eq_naive);
 
 % c vector
 cr_vec = logspace(-2,2,1e3);
@@ -206,9 +217,9 @@ cr_vec = logspace(-2,2,1e3);
 n_plot = 50;
 ir_vec_neq = metric_array_neq(:,ir_index);
 s_vec_neq = metric_array_neq(:,sharpness_index);
-ir_98 = prctile(ir_vec_neq,99);
+ir_98 = prctile(ir_vec_neq(hm_filter_neq),99);
 rng(123);
-plot_indices_neq = randsample(find(ir_vec_neq>ir_98&s_vec_neq>=0),n_plot,false);
+plot_indices_neq = randsample(find(ir_vec_neq>ir_98&s_vec_neq>=0&hm_filter_neq),n_plot,false);
 
 opt_rates_neq = NaN(length(cr_vec),n_plot);
 
