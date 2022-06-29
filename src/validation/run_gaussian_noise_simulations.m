@@ -5,11 +5,12 @@ close all
 addpath(genpath('../utilities'))
 
 DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
-OutPath = [DropboxFolder filesep 'appendices' filesep];
+OutPath = [DropboxFolder filesep 'appendices_v2' filesep];
 mkdir(OutPath);
 
 % set path to approapriate functions
-functionPath = '../utilities/metricFunctions/n4_OR';
+% functionPath = '../utilities/metricFunctions/n4_OR';
+functionPath = '../utilities/metricFunctions/symbolic/n004_s01_ns00_g01';
 rmpath(genpath('../utilities/metricFunctions/'));
 addpath(genpath(functionPath));
 
@@ -31,6 +32,8 @@ init_rate_vec = zeros(size(state_options));
 init_rate_vec(pd_states) = 1; % work in units of r0
 % basic rate parameters
 paramBounds = repmat([-2 ; 2],1,8);
+paramBounds(1,5) = 0; % ensures activation
+paramBounds(2,6) = 0; % ensures activation
 c_bounds = [-1 1];
 
 % generate lists of rate and concentration parameters
