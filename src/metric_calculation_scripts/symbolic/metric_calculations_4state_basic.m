@@ -33,9 +33,7 @@ RSym(eye(size(RSym,1))==1) = 0;
 RSym(eye(size(RSym,1))==1) = -sum(RSym);
 % RSymWrong(eye(size(RSymWrong,1))==1) = -sum(RSymWrong);
 
-% save
-RSymFun = matlabFunction(RSym,'File',[writePath 'RSymFun'],'Optimize',true,...
-          'Vars',networkInfo.sweepVarList);   
+
         
 % RSymFunWrong = matlabFunction(RSymWrong,'File',[writePath 'RSymFunWrong'],'Optimize',true,...
 %           'Vars',networkInfo.sweepVarListWrong);           
@@ -63,6 +61,12 @@ networkInfo.backwardRateIndices{1} = networkInfo.backwardRateIndices{1} - 2;
 networkInfo.RSym = RSym;
 save([writePath 'networkInfo'],'networkInfo');       
         
+
+% save
+RSymFun = matlabFunction(RSym,'File',[writePath 'RSymFun'],'Optimize',true,...
+          'Vars',networkInfo.sweepVarList); 
+        
+% RAlt = RSymFun(RSym>0);
 %% %%%%%%%%% derive expressions for production rate and sharpness %%%%%%%%%%
 
 [V,D] = eig(RSym);

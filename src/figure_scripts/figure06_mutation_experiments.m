@@ -38,7 +38,7 @@ precision_index = find(strcmp(metric_names,'Precision'));
 rate_index = find(strcmp(metric_names,'Production Rate'));
 precision_right_index = find(strcmp(metric_names,'PrecisionRight'));
 cw_index = find(strcmp(metric_names,'CW'));
-rate_ent_index = find(strcmp(metric_names,'rateEntropy'));
+rate_ent_index = find(strcmp(metric_names,'rand_vec'));
 
 % set sim options
 sweep_options = {'n_seeds',5,'n_iters_max',50,'n_sim',50,'nStates',nStates};
