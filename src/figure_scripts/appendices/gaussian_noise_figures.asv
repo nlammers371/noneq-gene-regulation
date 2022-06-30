@@ -42,17 +42,15 @@ mRNA_fig.InvertHardcopy = 'off';
 set(gcf,'color','w');
 mRNA_fig.Renderer='Painters';
 
-saveas(mRNA_fig,[FigPath,'mRNA_plot.png'])
-saveas(mRNA_fig,[FigPath,'mRNA_plot.pdf'])
+% saveas(mRNA_fig,[FigPath,'mRNA_plot.png'])
+% saveas(mRNA_fig,[FigPath,'mRNA_plot.pdf'])
 
 %% Plot illustrative histograms from 3 different time points
-plot_times = [5 25 2500];
+plot_times = [10 50 5000];
 plot_indices = [];
 plot_times_alt = [];
 for p = 1:length(plot_times)
-    [~, plot_indices(end+1)] = min(abs(plot_times(p)-time_grid));
-end    
-% plot_times_alt = time_grid(plot_indices);
+    [plot_times_alt(end+1) plot_indices(end+1)] = min(
 
 cmap = brewermap(length(plot_indices)+2,'Greens');
 % hist_bins = linspace(
@@ -74,8 +72,8 @@ for p = 1:length(plot_indices)
     set(gcf,'color','w');
     xlim([0 1])
     ylim([0 0.4])
-    saveas(hist_fig,[FigPath,'mRNA_hist_t' sprintf('%04d',plot_times(p)) '.png'])
-    saveas(hist_fig,[FigPath,'mRNA_hist_t' sprintf('%04d',plot_times(p)) '.pdf'])
+%     saveas(hist_fig,[FigPath,'mRNA_hist_t' sprintf('%04d',plot_times(p)) '.png'])
+%     saveas(hist_fig,[FigPath,'mRNA_hist_t' sprintf('%04d',plot_times(p)) '.pdf'])
 end  
 
 %% now look at p values for gene circuits, grouped by mean rate
