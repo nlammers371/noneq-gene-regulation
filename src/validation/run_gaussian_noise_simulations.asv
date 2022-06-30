@@ -154,7 +154,7 @@ parfor n = 1:length(ProductionRateArray)
       tau = dwell_time_vec(state_curr);    
 
       % randomly draw next jump time
-      dt = exprnd(tau) + 1e-30; % prevents rare numerical errors
+      dt = exprnd(tau);
       
       % randomly draw the number of initiation events
 %       n_pol_II = poissrnd(init_rate_vec(state_curr)*dt);
