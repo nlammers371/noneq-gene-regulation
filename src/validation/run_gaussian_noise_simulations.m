@@ -5,7 +5,7 @@ close all
 addpath(genpath('../utilities'))
 
 DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
-OutPath = [DropboxFolder filesep 'appendices_v3' filesep];
+OutPath = [DropboxFolder filesep 'appendices_v4' filesep];
 mkdir(OutPath);
 
 % set path to approapriate functions
@@ -17,12 +17,12 @@ addpath(genpath(functionPath));
 %%%%%%%%%%%%%%%%%
 % specify core simulation parameters
 %%%%%%%%%%%%%%%%%
-t_sim = 1e4; % duration of simulation (in burst cycles)
+t_sim = 5e3; % duration of simulation (in burst cycles)
 dT = 5;
 time_grid = logspace(-2,log10(t_sim),1000);%0:dT:t_sim;
 % initiation_rate = 1/3; % Pol II per second
 
-n_sim = 1e3; % number of independent simulations to run
+n_sim = 500; % number of independent simulations to run
 n_traces = 1e2; % number of replicates over which to calculate variance
 n_init_factor = 100;
 state_options = 1:4;
@@ -72,9 +72,9 @@ if sum(option_flags) < n_sim
 else    
     sim_indices = randsample(find(option_flags),n_sim,'false');    
     ProductionRateArray = ProductionRateArray(sim_indices,:);
-    rate_array = rate_array(sim_indices,:);
-    c_vec = c_vec(sim_indices);
-    param_array = [c_vec' rate_array];
+%     rate_array = rate_array(sim_indices,:);
+%     c_vec = c_vec(sim_indices);
+    param_array = param_array(sim_indices,:);%[c_vec' rate_array];
     paramCell = mat2cell(param_array,size(param_array,1),ones(1,size(param_array,2)));
 end
 
@@ -86,7 +86,7 @@ if isempty(p)
   parpool(28);%ceil(NumWorkers/1.5));
 end      
   
-%% initialize arrays
+% initialize arrays
 Gaussian_noise_struct = struct;
 % 
 % %% initialize waitbar
