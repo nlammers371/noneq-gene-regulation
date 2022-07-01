@@ -17,7 +17,7 @@ addpath(genpath(functionPath));
 %%%%%%%%%%%%%%%%%
 % specify core simulation parameters
 %%%%%%%%%%%%%%%%%
-t_sim = 3e5; % duration of simulation (in burst cycles)
+t_sim = 5e3; % duration of simulation (in burst cycles)
 dT = 5;
 time_grid = logspace(-2,log10(t_sim),1000);%0:dT:t_sim;
 % initiation_rate = 1/3; % Pol II per second
@@ -77,7 +77,7 @@ else
     param_array = param_array(sim_indices,:);%[c_vec' rate_array];
     paramCell = mat2cell(param_array,size(param_array,1),ones(1,size(param_array,2)));
 end
-%%
+
 % initialize parpool
 myCluster = parcluster('local');
 NumWorkers = myCluster.NumWorkers;
