@@ -5,7 +5,7 @@ clear
 close all
 addpath(genpath('../utilities'))
 DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\Nonequilibrium\Nick\';
-ReadPath = [DropboxFolder  'SweepOutput\appendices_v3' filesep];
+ReadPath = [DropboxFolder  'SweepOutput\appendices_v4' filesep];
 FigPath = [DropboxFolder 'manuscript\appendices\gaussian_approximation\'];
 mkdir(FigPath)
 
@@ -15,7 +15,7 @@ load([ReadPath 'Gaussian_noise_struct.mat'])
 %% make figures
 close all
 % plot accumulated mRNA over time
-sim_ind = 604;
+sim_ind = 26;
 mRNA_array = Gaussian_noise_struct(sim_ind).mRNA_array;
 time_grid = Gaussian_noise_struct(sim_ind).time_grid;
 
@@ -42,15 +42,17 @@ mRNA_fig.InvertHardcopy = 'off';
 set(gcf,'color','w');
 mRNA_fig.Renderer='Painters';
 
-% saveas(mRNA_fig,[FigPath,'mRNA_plot.png'])
-% saveas(mRNA_fig,[FigPath,'mRNA_plot.pdf'])
+saveas(mRNA_fig,[FigPath,'mRNA_plot.png'])
+saveas(mRNA_fig,[FigPath,'mRNA_plot.pdf'])
 
 %% Plot illustrative histograms from 3 different time points
-plot_times = [10 50 5000];
+plot_times = [1 25 2500];
 plot_indices = [];
 plot_times_alt = [];
 for p = 1:length(plot_times)
-    [plot_times_alt(end+1) plot_indices(end+1)] = min(
+    [~, plot_indices(end+1)] = min(abs(plot_times(p)-time_grid));
+end    
+% plot_times_alt = time_grid(plot_indices);
 
 cmap = brewermap(length(plot_indices)+2,'Greens');
 % hist_bins = linspace(
@@ -72,9 +74,25 @@ for p = 1:length(plot_indices)
     set(gcf,'color','w');
     xlim([0 1])
     ylim([0 0.4])
-%     saveas(hist_fig,[FigPath,'mRNA_hist_t' sprintf('%04d',plot_times(p)) '.png'])
-%     saveas(hist_fig,[FigPath,'mRNA_hist_t' sprintf('%04d',plot_times(p)) '.pdf'])
+    saveas(hist_fig,[FigPath,'mRNA_hist_t' sprintf('%04d',plot_times(p)) '.png'])
+    saveas(hist_fig,[FigPath,'mRNA_hist_t' sprintf('%04d',plot_times(p)) '.pdf'])
 end  
+
+%% re-calculate p values 
+mRNA_array_norm = NaN(length(time_grid),size(Gaussian_noise_struct(1).mRNA_array,2),length(Gaussian_noise_struct));
+p_array = NaN(length(time_grid),length(Gaussian_noise_struct));
+
+for i = 1:length(Gaussian_noise_struct)
+    r_mean = Gaussian_noise_struct(i).r_predicted;
+    r_var = Gaussian_noise_struct(i).var_predicted;
+    mRNA_array = Gaussian_noise_struct(i).mRNA_array;
+    mRNA_array_n = (mRNA_array-r_mean) ./ sqrt(r_vec);
+    mRNA_array_norm(:,:
+    for m = 1:size(mRNA_array_n,1)
+        m_vec = mRNA_array_n(m);
+        [~,p_array(i,m)] = kstest(m_vec);
+    end
+end
 
 %% now look at p values for gene circuits, grouped by mean rate
 n_groups = 10;
