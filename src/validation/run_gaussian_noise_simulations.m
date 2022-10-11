@@ -5,7 +5,7 @@ close all
 addpath(genpath('../utilities'))
 
 DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
-OutPath = [DropboxFolder filesep 'appendices_v4' filesep];
+OutPath = [DropboxFolder filesep 'appendices_v5' filesep];
 mkdir(OutPath);
 
 % set path to approapriate functions
@@ -17,10 +17,12 @@ addpath(genpath(functionPath));
 %%%%%%%%%%%%%%%%%
 % specify core simulation parameters
 %%%%%%%%%%%%%%%%%
-t_sim = 3e5; % duration of simulation (in burst cycles)
+t_sim = 5e3; % duration of simulation (in burst cycles)
 dT = 5;
 time_grid = logspace(-2,log10(t_sim),1000);%0:dT:t_sim;
 % initiation_rate = 1/3; % Pol II per second
+
+max_sim_time = 600;
 
 n_sim = 500; % number of independent simulations to run
 n_traces = 1e2; % number of replicates over which to calculate variance
@@ -37,7 +39,7 @@ paramBounds(2,6) = 0; % ensures activation
 c_bounds = [-1 1];
 
 % generate lists of rate and concentration parameters
-rng(123)
+rng(31)
 
 % generate arrays of upper and lower bounds
 lb_array = repmat(paramBounds(1,:),n_sim*n_init_factor,1);
@@ -77,7 +79,7 @@ else
     param_array = param_array(sim_indices,:);%[c_vec' rate_array];
     paramCell = mat2cell(param_array,size(param_array,1),ones(1,size(param_array,2)));
 end
-%%
+%
 % initialize parpool
 myCluster = parcluster('local');
 NumWorkers = myCluster.NumWorkers;
@@ -99,7 +101,7 @@ Gaussian_noise_struct = struct;
 % %%
 % h = waitbar(0,'Simulating transcription network dynamics...');
 % iterate through time points  
-parfor n = 1:length(ProductionRateArray)
+parfor n = 1:28 %:length(ProductionRateArray)
 %   n = empty_inds(n)
   tic
 %   waitbar(n/n_sim,h);  
@@ -144,7 +146,7 @@ parfor n = 1:length(ProductionRateArray)
     state_vec = [randsample(state_options,1,true,ss)];    
     total_time = 0;   
     act_time = 0;
-    while total_time < t_sim     
+    while total_time < t_sim && toc <= max_sim_time
       
       % extract state info
       state_curr = state_vec(end);
@@ -220,39 +222,15 @@ parfor n = 1:length(ProductionRateArray)
   toc 
 end
 
-% delete(h);
-% %%
-% close all
-% figure;
-% plot(time_grid/sim_struct(n).tau_cycle,sim_struct(n).r_mean_vec*time_grid(end)./time_grid')
-% 
-% figure;
-% hold on
-% var_array = [];
-% for n = 1:length(sim_struct)
-%     var_array(:,n) = sim_struct(n).r_var_vec./ sim_struct(n).var_predicted;
-%     plot(time_grid/sim_struct(n).tau_cycle,sim_struct(n).r_var_vec ./ sim_struct(n).var_predicted)
-% end
-% 
-% plot(nanmean(var_array,2),'-k','LineWidth',4)
-% save results
-% %%
-% fnames = fieldnames(Gaussian_noise_struct);
-% 
-% for i = 1:length(empty_inds)
-%     for f = 1:length(fnames)
-%         Gaussian_noise_struct_orig(empty_inds(i)).(fnames{f}) = Gaussian_noise_struct(i).(fnames{f});
-%     end
-% end
 
-save([OutPath 'Gaussian_noise_struct.mat'],'Gaussian_noise_struct', '-v7.3')
-%%
-Gaussian_noise_struct = rmfield(Gaussian_noise_struct,'total_mRNA_array_norm');
-%%
-for i = 1:length(Gaussian_noise_struct)
-    total_mRNA_array = Gaussian_noise_struct(i).mRNA_array;
-    total_mRNA_array_ds = interp1(time_grid,total_mRNA_array,0:5:t_sim);
-    Gaussian_noise_struct(i).mRNA_array = total_mRNA_array_ds;
-    Gaussian_noise_struct(i).time_grid = 0:5:t_sim;
-end    
-
+% save([OutPath 'Gaussian_noise_struct.mat'],'Gaussian_noise_struct', '-v7.3')
+% %%
+% Gaussian_noise_struct = rmfield(Gaussian_noise_struct,'total_mRNA_array_norm');
+% %%
+% for i = 1:length(Gaussian_noise_struct)
+%     total_mRNA_array = Gaussian_noise_struct(i).mRNA_array;
+%     total_mRNA_array_ds = interp1(time_grid,total_mRNA_array,0:5:t_sim);
+%     Gaussian_noise_struct(i).mRNA_array = total_mRNA_array_ds;
+%     Gaussian_noise_struct(i).time_grid = 0:5:t_sim;
+% end    
+% 
