@@ -23,7 +23,7 @@ dT = 5;
 time_grid = logspace(-2,log10(t_sim),1000);%0:dT:t_sim;
 % initiation_rate = 1/3; % Pol II per second
 
-n_sim = 5; % number of independent simulations to run
+n_sim = 500; % number of independent simulations to run
 n_traces = 1e2; % number of replicates over which to calculate variance
 n_init_factor = 100;
 state_options = 1:4;
