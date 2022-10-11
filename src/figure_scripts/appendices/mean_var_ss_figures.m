@@ -10,37 +10,37 @@ FigPath = [DropboxFolder 'manuscript' filesep 'appendices' filesep 'gaussian_app
 mkdir(FigPath)
 
 % load simulation data
-load([ReadPath 'Gaussian_noise_struct.mat'])
+load([ReadPath 'ss_struct.mat'])
 
 %% Calculate percent absolute deviation from ground truth
-var_dev_vec = NaN(length(Gaussian_noise_struct(1).r_mean_vec),length(Gaussian_noise_struct));
-mean_dev_vec = NaN(length(Gaussian_noise_struct(1).r_mean_vec),length(Gaussian_noise_struct));
+var_dev_vec = NaN(length(ss_struct(1).r_mean_vec),length(ss_struct));
+mean_dev_vec = NaN(length(ss_struct(1).r_mean_vec),length(ss_struct));
 
-var_abs_dev_vec = NaN(length(Gaussian_noise_struct(1).r_mean_vec),length(Gaussian_noise_struct));
-mean_abs_dev_vec = NaN(length(Gaussian_noise_struct(1).r_mean_vec),length(Gaussian_noise_struct));
+var_abs_dev_vec = NaN(length(ss_struct(1).r_mean_vec),length(ss_struct));
+mean_abs_dev_vec = NaN(length(ss_struct(1).r_mean_vec),length(ss_struct));
 
-for i = 1:length(Gaussian_noise_struct)
-    rt = Gaussian_noise_struct(i).r_predicted;
-    vt = Gaussian_noise_struct(i).var_predicted;
+for i = 1:length(ss_struct)
+    rt = ss_struct(i).r_predicted;
+    vt = ss_struct(i).var_predicted;
 
-    mean_dev_vec(:,i) = (rt-Gaussian_noise_struct(i).r_mean_vec)/rt;
-    var_dev_vec(:,i) = (vt-Gaussian_noise_struct(i).r_var_vec)/vt;
+    mean_dev_vec(:,i) = (rt-ss_struct(i).r_mean_vec)/rt;
+    var_dev_vec(:,i) = (vt-ss_struct(i).r_var_vec)/vt;
 
-    mean_abs_dev_vec(:,i) = abs(rt-Gaussian_noise_struct(i).r_mean_vec)/rt;
-    var_abs_dev_vec(:,i) = abs(vt-Gaussian_noise_struct(i).r_var_vec)/vt;
+    mean_abs_dev_vec(:,i) = abs(rt-ss_struct(i).r_mean_vec)/rt;
+    var_abs_dev_vec(:,i) = abs(vt-ss_struct(i).r_var_vec)/vt;
 
 end
 
-%% now look at p values for gene circuits, grouped by mean rate
+%% now look at mean and variance values for gene circuits, grouped by mean rate
 n_groups = 10;
 r_bins = linspace(0,1,n_groups+1);
-r_mean_vec = [Gaussian_noise_struct.r_mean];
+r_mean_vec = [ss_struct.r_mean];
 r_group_vec = discretize(r_mean_vec,r_bins);
-% p_array_sim = p_array';%vertcat(Gaussian_noise_struct.p_vec);
+% p_array_sim = p_array';%vertcat(ss_struct.p_vec);
 
 % use bootstrapping to estimate standard error in convergence across
 % different groups
-t_grid_long = Gaussian_noise_struct(1).time_grid;
+t_grid_long = ss_struct(1).time_grid;
 nBoots = 100;
 ma_boot_array = NaN(length(t_grid_long),n_groups,nBoots);
 m_boot_array = NaN(length(t_grid_long),n_groups,nBoots);

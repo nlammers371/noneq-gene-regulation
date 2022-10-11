@@ -73,6 +73,7 @@ if sum(option_flags) < n_sim
 else    
     sim_indices = randsample(find(option_flags),n_sim,'false');    
     ProductionRateArray = ProductionRateArray(sim_indices,:);
+    VarianceArray = VarianceArray(sim_indices,:);
 %     rate_array = rate_array(sim_indices,:);
 %     c_vec = c_vec(sim_indices);
     param_array = param_array(sim_indices,:);%[c_vec' rate_array];
