@@ -5,7 +5,7 @@ clear
 close all
 addpath(genpath('../utilities'))
 DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\Nonequilibrium\Nick\';
-ReadPath = [DropboxFolder  'SweepOutput\appendices_v3' filesep];
+ReadPath = [DropboxFolder  'SweepOutput\appendices' filesep];
 FigPath = [DropboxFolder 'manuscript\appendices\gaussian_approximation\'];
 mkdir(FigPath)
 
@@ -15,7 +15,7 @@ load([ReadPath 'Gaussian_noise_struct.mat'])
 %% make figures
 close all
 % plot accumulated mRNA over time
-sim_ind = 604;
+sim_ind = 74;
 mRNA_array = Gaussian_noise_struct(sim_ind).mRNA_array;
 time_grid = Gaussian_noise_struct(sim_ind).time_grid;
 
@@ -45,7 +45,7 @@ mRNA_fig.Renderer='Painters';
 saveas(mRNA_fig,[FigPath,'mRNA_plot.png'])
 saveas(mRNA_fig,[FigPath,'mRNA_plot.pdf'])
 
-%% Plot illustrative histograms from 3 different time points
+% Plot illustrative histograms from 3 different time points
 plot_times = [5 25 2500];
 plot_indices = [];
 plot_times_alt = [];
@@ -78,12 +78,29 @@ for p = 1:length(plot_indices)
     saveas(hist_fig,[FigPath,'mRNA_hist_t' sprintf('%04d',plot_times(p)) '.pdf'])
 end  
 
+%% re-calculate p values 
+time_grid = Gaussian_noise_struct(1).time_grid;
+mRNA_array_norm = NaN(length(time_grid),size(Gaussian_noise_struct(1).mRNA_array,2),length(Gaussian_noise_struct));
+p_array = NaN(length(time_grid),length(Gaussian_noise_struct));
+tic
+for i = 1:length(Gaussian_noise_struct)
+    r_mean = Gaussian_noise_struct(i).r_predicted;
+    r_var = Gaussian_noise_struct(i).var_predicted;
+    mRNA_array = Gaussian_noise_struct(i).mRNA_array;
+    mRNA_array_n = (mRNA_array-r_mean.*time_grid') ./ sqrt(r_var.*time_grid');
+    mRNA_array_norm(:,:,i) = mRNA_array_n;
+    for m = 1:size(mRNA_array_n,1)
+        m_vec = mRNA_array_n(m,:);
+        [~,p_array(m,i)] = kstest(m_vec);
+    end
+end
+toc
 %% now look at p values for gene circuits, grouped by mean rate
 n_groups = 10;
 r_bins = linspace(0,1,n_groups+1);
 r_mean_vec = [Gaussian_noise_struct.r_mean];
 r_group_vec = discretize(r_mean_vec,r_bins);
-p_array_sim = vertcat(Gaussian_noise_struct.p_vec);
+p_array_sim = p_array';%vertcat(Gaussian_noise_struct.p_vec);
 
 % use bootstrapping to estimate standard error in convergence across
 % different groups
@@ -121,7 +138,7 @@ set(gca,'Color',[228,221,209]/255)
 h = colorbar;
 ylabel(h,'average production rate (r)')
 ax = gca;
-
+xlim([1e-1 5e3])
 ax.YAxis(1).Color = 'k';
 ax.XAxis(1).Color = 'k';
 
@@ -133,6 +150,6 @@ set(gcf,'color','w');
 p_fig.Renderer='Painters';
 set(gca,'xscale','log')
 
-% saveas(p_fig,[FigPath,'p_trend_log.png'])
-% saveas(p_fig,[FigPath,'p_trend_log.pdf'])
+saveas(p_fig,[FigPath,'p_trend_log.png'])
+saveas(p_fig,[FigPath,'p_trend_log.pdf'])
 

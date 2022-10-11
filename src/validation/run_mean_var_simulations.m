@@ -2,16 +2,17 @@
 % theoretical expressions for intrinsic noise for the full four state network
 clear
 close all
-addpath(genpath('../utilities'))
+addpath(genpath('../../utilities'))
 
-DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
+% DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
+DropboxFolder = [filesep 'Users' filesep 'nick' filesep 'Dropbox (Personal)' filesep 'Nonequilibrium' filesep 'Nick' filesep];
 OutPath = [DropboxFolder filesep 'appendices_v4' filesep];
 mkdir(OutPath);
 
 % set path to approapriate functions
 % functionPath = '../utilities/metricFunctions/n4_OR';
-functionPath = '../utilities/metricFunctions/symbolic/n004_s01_ns00_g01';
-rmpath(genpath('../utilities/metricFunctions/'));
+functionPath = '../../utilities/metricFunctions/symbolic/n004_s01_ns00_g01';
+rmpath(genpath('../../utilities/metricFunctions/'));
 addpath(genpath(functionPath));
 
 %%%%%%%%%%%%%%%%%
@@ -31,7 +32,7 @@ a_bounds = [0.02 0.98];
 init_rate_vec = zeros(size(state_options));
 init_rate_vec(pd_states) = 1; % work in units of r0
 % basic rate parameters
-paramBounds = repmat([-2 ; 2],1,8);
+paramBounds = repmat([-5 ; 5],1,8);
 paramBounds(1,5) = 0; % ensures activation
 paramBounds(2,6) = 0; % ensures activation
 c_bounds = [-1 1];
@@ -83,11 +84,11 @@ myCluster = parcluster('local');
 NumWorkers = myCluster.NumWorkers;
 p = gcp('nocreate');
 if isempty(p)
-  parpool(28);%ceil(NumWorkers/1.5));
+  parpool(min([NumWorkers 28]));%ceil(NumWorkers/1.5));
 end      
   
 % initialize arrays
-Gaussian_noise_struct = struct;
+ss_struct = struct;
 % 
 % %% initialize waitbar
 % Gaussian_noise_struct = struct;
@@ -99,7 +100,7 @@ Gaussian_noise_struct = struct;
 % %%
 % h = waitbar(0,'Simulating transcription network dynamics...');
 % iterate through time points  
-parfor n = 1:length(ProductionRateArray)
+for n = 1:length(ProductionRateArray)
 %   n = empty_inds(n)
   tic
 %   waitbar(n/n_sim,h);  
@@ -109,8 +110,8 @@ parfor n = 1:length(ProductionRateArray)
   mu_c = c_vec(n);     
   
   % get predictions
-  Gaussian_noise_struct(n).r_predicted = ProductionRateArray(n);
-  Gaussian_noise_struct(n).var_predicted = VarianceArray(n);
+  ss_struct(n).r_predicted = ProductionRateArray(n);
+  ss_struct(n).var_predicted = VarianceArray(n);
 %   sim_struct(n).r_predicted_poisson = sim_struct(n).r_predicted*initiation_rate;
 %   sim_struct(n).var_predicted_poisson = sim_struct(n).var_predicted*initiation_rate^2 +  sim_struct(n).r_predicted_poisson;
   
@@ -134,7 +135,7 @@ parfor n = 1:length(ProductionRateArray)
   % initilize array to store cumulative mRNA
   total_mRNA_array = NaN(length(time_grid),n_traces);
   
-  for rep = 1:n_traces
+  parfor rep = 1:n_traces
     
     % initialize vector to store results
     jump_time_vec = [];
@@ -191,14 +192,14 @@ parfor n = 1:length(ProductionRateArray)
   end  
   
   % record average values
-  Gaussian_noise_struct(n).r_mean = nanmean(total_mRNA_array(end,:))/time_grid(end);
-  Gaussian_noise_struct(n).r_var = nanvar(total_mRNA_array(end,:))/time_grid(end);
-  Gaussian_noise_struct(n).r_mean_vec = nanmean(total_mRNA_array,2)./time_grid';
-  Gaussian_noise_struct(n).r_var_vec = nanvar(total_mRNA_array,[],2)./time_grid';
+  ss_struct(n).r_mean = nanmean(total_mRNA_array(end,:))/time_grid(end);
+  ss_struct(n).r_var = nanvar(total_mRNA_array(end,:))/time_grid(end);
+  ss_struct(n).r_mean_vec = nanmean(total_mRNA_array,2)./time_grid';
+  ss_struct(n).r_var_vec = nanvar(total_mRNA_array,[],2)./time_grid';
 %   sim_struct(n).r_mean_poisson = mean(total_mRNA_array_poisson(end,:))/time_grid(end);
 %   sim_struct(n).r_var_poisson = var(total_mRNA_array_poisson(end,:))/time_grid(end);
-  Gaussian_noise_struct(n).mRNA_array = total_mRNA_array;
-  Gaussian_noise_struct(n).time_grid = time_grid;
+  ss_struct(n).mRNA_array = total_mRNA_array;
+  ss_struct(n).time_grid = time_grid;
   
 %   sim_struct(n).tau_on = mean(on_dwell_time_array);
 %   sim_struct(n).tau_off = mean(off_dwell_time_array);
@@ -206,12 +207,12 @@ parfor n = 1:length(ProductionRateArray)
   
   % perform normality test
   total_mRNA_array_norm = (total_mRNA_array - nanmean(total_mRNA_array,2)) ./ nanstd(total_mRNA_array,[],2);
-%   Gaussian_noise_struct(n).total_mRNA_array_norm = total_mRNA_array_norm;
-  Gaussian_noise_struct(n).p_vec = NaN(size(time_grid));
-  Gaussian_noise_struct(n).gauss_flag = NaN(size(time_grid));
+% %   Gaussian_noise_struct(n).total_mRNA_array_norm = total_mRNA_array_norm;
+  ss_struct(n).p_vec = NaN(size(time_grid));
+  ss_struct(n).gauss_flag = NaN(size(time_grid));
   for t = 1:length(time_grid)
       try
-          [Gaussian_noise_struct(n).gauss_flag(t),Gaussian_noise_struct(n).p_vec(t)] = kstest(total_mRNA_array_norm(t,:));
+          [ss_struct(n).gauss_flag(t),ss_struct(n).p_vec(t)] = kstest(total_mRNA_array_norm(t,:));
       catch
           % do nothing
       end
@@ -245,14 +246,14 @@ end
 %     end
 % end
 
-save([OutPath 'Gaussian_noise_struct.mat'],'Gaussian_noise_struct', '-v7.3')
+save([OutPath 'ss_struct.mat'],'ss_struct', '-v7.3')
 %%
-Gaussian_noise_struct = rmfield(Gaussian_noise_struct,'total_mRNA_array_norm');
+ss_struct = rmfield(ss_struct,'total_mRNA_array_norm');
 %%
-for i = 1:length(Gaussian_noise_struct)
-    total_mRNA_array = Gaussian_noise_struct(i).mRNA_array;
+for i = 1:length(ss_struct)
+    total_mRNA_array = ss_struct(i).mRNA_array;
     total_mRNA_array_ds = interp1(time_grid,total_mRNA_array,0:5:t_sim);
-    Gaussian_noise_struct(i).mRNA_array = total_mRNA_array_ds;
-    Gaussian_noise_struct(i).time_grid = 0:5:t_sim;
+    ss_struct(i).mRNA_array = total_mRNA_array_ds;
+    ss_struct(i).time_grid = 0:5:t_sim;
 end    
 
