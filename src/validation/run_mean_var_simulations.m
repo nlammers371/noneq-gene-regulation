@@ -2,17 +2,17 @@
 % theoretical expressions for intrinsic noise for the full four state network
 clear
 close all
-addpath(genpath('../../utilities'))
+addpath(genpath('../utilities'))
 
 % DropboxFolder = 'S:\Nick\Dropbox\Nonequilibrium\Nick\SweepOutput';
 DropboxFolder = [filesep 'Users' filesep 'nick' filesep 'Dropbox (Personal)' filesep 'Nonequilibrium' filesep 'Nick' filesep];
-OutPath = [DropboxFolder filesep 'appendices_v4' filesep];
+OutPath = [DropboxFolder filesep 'appendices_v5' filesep];
 mkdir(OutPath);
 
 % set path to approapriate functions
 % functionPath = '../utilities/metricFunctions/n4_OR';
-functionPath = '../../utilities/metricFunctions/symbolic/n004_s01_ns00_g01';
-rmpath(genpath('../../utilities/metricFunctions/'));
+functionPath = '../utilities/metricFunctions/symbolic/n004_s01_ns00_g01';
+rmpath(genpath('../utilities/metricFunctions/'));
 addpath(genpath(functionPath));
 
 %%%%%%%%%%%%%%%%%
