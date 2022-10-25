@@ -10,65 +10,83 @@ FigPath = [DropboxFolder 'manuscript' filesep 'appendices' filesep 'gaussian_app
 mkdir(FigPath)
 
 % load simulation data
-load([ReadPath 'Gaussian_noise_struct.mat'])
+load([ReadPath 'ss_struct.mat'])
 
 %% Calculate percent absolute deviation from ground truth
-var_dev_vec = NaN(length(Gaussian_noise_struct(1).r_mean_vec),length(Gaussian_noise_struct));
-mean_dev_vec = NaN(length(Gaussian_noise_struct(1).r_mean_vec),length(Gaussian_noise_struct));
+var_dev_array = NaN(length(ss_struct(1).r_mean_vec),length(ss_struct));
+mean_dev_array = NaN(length(ss_struct(1).r_mean_vec),length(ss_struct));
 
-var_abs_dev_vec = NaN(length(Gaussian_noise_struct(1).r_mean_vec),length(Gaussian_noise_struct));
-mean_abs_dev_vec = NaN(length(Gaussian_noise_struct(1).r_mean_vec),length(Gaussian_noise_struct));
+var_abs_dev_array = NaN(length(ss_struct(1).r_mean_vec),length(ss_struct));
+mean_abs_dev_array = NaN(length(ss_struct(1).r_mean_vec),length(ss_struct));
 
-for i = 1:length(Gaussian_noise_struct)
-    rt = Gaussian_noise_struct(i).r_predicted;
-    vt = Gaussian_noise_struct(i).var_predicted;
+var_pd_array = NaN(length(ss_struct(1).r_mean_vec),length(ss_struct));
+mean_pd_array = NaN(length(ss_struct(1).r_mean_vec),length(ss_struct));
 
-    mean_dev_vec(:,i) = (rt-Gaussian_noise_struct(i).r_mean_vec)/rt;
-    var_dev_vec(:,i) = (vt-Gaussian_noise_struct(i).r_var_vec)/vt;
+var_sim_array = NaN(length(ss_struct(1).r_mean_vec),length(ss_struct));
+mean_sim_array = NaN(length(ss_struct(1).r_mean_vec),length(ss_struct));
 
-    mean_abs_dev_vec(:,i) = abs(rt-Gaussian_noise_struct(i).r_mean_vec)/rt;
-    var_abs_dev_vec(:,i) = abs(vt-Gaussian_noise_struct(i).r_var_vec)/vt;
+for i = 1:length(ss_struct)
+    rt = ss_struct(i).r_predicted;
+    vt = ss_struct(i).var_predicted;
+
+    mean_dev_array(:,i) = (rt-ss_struct(i).r_mean_vec)/rt;
+    var_dev_array(:,i) = (vt-ss_struct(i).r_var_vec)/vt;
+
+    mean_abs_dev_array(:,i) = abs(rt-ss_struct(i).r_mean_vec)/rt;
+    var_abs_dev_array(:,i) = abs(vt-ss_struct(i).r_var_vec)/vt;
+
+    % record values for subsequent use
+    mean_sim_array(:,i) = ss_struct(i).r_mean_vec;
+    var_sim_array(:,i) = ss_struct(i).r_var_vec;
+
+    mean_pd_array(:,i) = rt;
+    var_pd_array(:,i) = vt;
 
 end
 
-%% now look at p values for gene circuits, grouped by mean rate
+%% now look at mean and variance values for gene circuits, grouped by mean rate
 n_groups = 10;
 r_bins = linspace(0,1,n_groups+1);
-r_mean_vec = [Gaussian_noise_struct.r_mean];
+r_mean_vec = [ss_struct.r_mean];
 r_group_vec = discretize(r_mean_vec,r_bins);
-% p_array_sim = p_array';%vertcat(Gaussian_noise_struct.p_vec);
+% p_array_sim = p_array';%vertcat(ss_struct.p_vec);
 
 % use bootstrapping to estimate standard error in convergence across
 % different groups
-t_grid_long = Gaussian_noise_struct(1).time_grid;
+t_grid_long = ss_struct(1).time_grid;
 nBoots = 100;
 ma_boot_array = NaN(length(t_grid_long),n_groups,nBoots);
+% m2_boot_array = NaN(length(t_grid_long),n_groups,nBoots);
 m_boot_array = NaN(length(t_grid_long),n_groups,nBoots);
 va_boot_array = NaN(length(t_grid_long),n_groups,nBoots);
+% v2_boot_array = NaN(length(t_grid_long),n_groups,nBoots);
 v_boot_array = NaN(length(t_grid_long),n_groups,nBoots);
+
 for n = 1:n_groups
     option_vec = find(r_group_vec==n);
     for b = 1:nBoots
         boot_indices = randsample(option_vec,length(option_vec),true);
-       
-        ma_boot_array(:,n,b) = mean(mean_abs_dev_vec(:,boot_indices),2);
-        m_boot_array(:,n,b) = mean(mean_dev_vec(:,boot_indices),2);
-        va_boot_array(:,n,b) = mean(var_abs_dev_vec(:,boot_indices),2);
-        v_boot_array(:,n,b) = mean(var_dev_vec(:,boot_indices),2);
+
+        % estimate percent deviation statistics
+        ma_boot_array(:,n,b) = mean(mean_abs_dev_array(:,boot_indices),2);
+        m_boot_array(:,n,b) = mean(mean_dev_array(:,boot_indices),2);
+        va_boot_array(:,n,b) = mean(var_abs_dev_array(:,boot_indices),2);
+        v_boot_array(:,n,b) = mean(var_dev_array(:,boot_indices),2);
+
     end
 end
 
-m_mean_array = mean(m_boot_array,3);
-m_ste_array = std(m_boot_array,[],3);
+m_mean_array = mean(m_boot_array,3)*100;
+m_ste_array = std(m_boot_array,[],3)*100;
 
-ma_mean_array = mean(ma_boot_array,3);
-ma_ste_array = std(ma_boot_array,[],3);
+ma_mean_array = mean(ma_boot_array,3)*100;
+ma_ste_array = std(ma_boot_array,[],3)*100;
 
-v_mean_array = mean(v_boot_array,3);
-v_ste_array = std(v_boot_array,[],3);
+v_mean_array = mean(v_boot_array,3)*100;
+v_ste_array = std(v_boot_array,[],3)*100;
 
-va_mean_array = mean(va_boot_array,3);
-va_ste_array = std(va_boot_array,[],3);
+va_mean_array = mean(va_boot_array,3)*100;
+va_ste_array = std(va_boot_array,[],3)*100;
 
 
 close all
@@ -99,7 +117,7 @@ set(gcf,'color','w');
 ma_fig.Renderer='Painters';
 set(gca,'xscale','log')
 % set(gca,'yscale','log')
-ylim([0 0.3])
+ylim([0 30])
 saveas(ma_fig,[FigPath,'ma_trend_log.png'])
 saveas(ma_fig,[FigPath,'ma_trend_log.pdf'])
 
@@ -125,17 +143,77 @@ xlim([1e-1 5e3])
 ax.YAxis(1).Color = 'k';
 ax.XAxis(1).Color = 'k';
 
-ma_fig.InvertHardcopy = 'off';
+va_fig.InvertHardcopy = 'off';
 set(gcf,'color','w');
 
-ma_fig.Renderer='Painters';
+va_fig.Renderer='Painters';
 set(gca,'xscale','log')
 % set(gca,'yscale','log')
+ylim([0 100])
+saveas(va_fig,[FigPath,'va_trend_log.png'])
+saveas(va_fig,[FigPath,'va_trend_log.pdf'])
+
+%% make scatter plots showing predicted vs actual for final time point
+r_scatter_fig = figure;
+hold on
+cmap = brewermap([],'set2');
+
+scatter(mean_pd_array(end,:),mean_sim_array(end,:),75,'MarkerFaceColor',cmap(8,:),'MarkerEdgeColor','k','MarkerFaceAlpha',0.5)
+
+plot(linspace(0,1),linspace(0,1),'-','Color','k','LineWidth',2)
+
+% grid on
+xlabel('production rate (analytic prediction)');
+ylabel('production rate (simulation)')
+
+set(gca,'FontSize',14)
+% set(gca,'Color',[228,221,209]/255) 
+
+set(gca,'xtick',0:0.2:1,'ytick',0:0.2:1)
+ax = gca;
+xlim([0 1])
 ylim([0 1])
-saveas(ma_fig,[FigPath,'va_trend_log.png'])
-saveas(ma_fig,[FigPath,'va_trend_log.pdf'])
+ax.YAxis(1).Color = 'k';
+ax.XAxis(1).Color = 'k';
+box on
+r_scatter_fig.InvertHardcopy = 'off';
+set(gcf,'color','w');
 
+saveas(r_scatter_fig,[FigPath,'va_trend_log.png'])
+saveas(va_fig,[FigPath,'va_trend_log.pdf'])
 
+%%
+min_v = min(var_pd_array(end,:));
+max_v = max(var_pd_array(end,:));
+
+v_scatter_fig = figure;
+hold on
+cmap = brewermap([],'set2');
+
+scatter(var_pd_array(end,:),var_sim_array(end,:),75,'MarkerFaceColor',cmap(8,:),'MarkerEdgeColor','k','MarkerFaceAlpha',0.5)
+
+plot(logspace(-4,1),logspace(-4,1),'-.','Color','k','LineWidth',2)
+
+% grid on
+xlabel('production rate (analytic prediction)');
+ylabel('production rate (simulation)')
+box on
+set(gca,'FontSize',14)
+% set(gca,'Color',[228,221,209]/255) 
+
+% set(gca,'xtick',0:0.2:1,'ytick',0:0.2:1)
+
+set(gca,'yscale','log')
+set(gca,'xscale','log')
+
+ax = gca;
+xlim([1e-4 1e1])
+ylim([1e-4 1e1])
+ax.YAxis(1).Color = 'k';
+ax.XAxis(1).Color = 'k';
+
+v_scatter_fig.InvertHardcopy = 'off';
+set(gcf,'color','w');
 %%
 m_fig = figure;
 hold on
@@ -164,11 +242,11 @@ set(gcf,'color','w');
 m_fig.Renderer='Painters';
 set(gca,'xscale','log')
 % set(gca,'yscale','log')
-ylim([-0.3 0.3])
+ylim([-10 10])
 saveas(m_fig,[FigPath,'m_trend_log.png'])
 saveas(m_fig,[FigPath,'m_trend_log.pdf'])
 
-%% variance
+% variance
 va_fig = figure;
 hold on
 cmap = flipud(brewermap(n_groups,'Spectral'));
@@ -196,6 +274,6 @@ set(gcf,'color','w');
 ma_fig.Renderer='Painters';
 set(gca,'xscale','log')
 % set(gca,'yscale','log')
-ylim([-0.2 1])
+ylim([-20 100])
 saveas(ma_fig,[FigPath,'v_trend_log.png'])
 saveas(ma_fig,[FigPath,'v_trend_log.pdf'])
