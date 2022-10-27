@@ -237,7 +237,7 @@ sharp_vec_norm = metric_array_cmb(:,sharpness_index).^2/4;
 prec_vec_norm = (exp(metric_array_cmb(:,precision_index)))/1;
 
 % calculate param and state prob distributions
-n_score_bins = 50;
+n_score_bins = 25;
 n_val_bins = 25;
 
 sharp_param_array = NaN(n_val_bins, n_score_bins,size(rate_array_cmb_norm,2));
@@ -270,7 +270,7 @@ end
 % Make figures
 close all
 
-prec_prob_fig = figure('Position',[100 100 512 512]);
+prec_prob_fig = figure;
 cmap = brewermap([],'Reds');
 hold on
 colormap(cmap)
@@ -280,14 +280,13 @@ for i = 1:4
     nexttile
     p = imagesc(flipud(prec_prob_array(:,:,i)));
 %     p.EdgeAlpha = 0.1;
-    set(gca,'ytick',[1 12.5 25],'yticklabels',fliplr([0 0.5 1]));
+    set(gca,'ytick',[1 12.5 25],'yticklabels',[0 0.5 1]);
     if i == 4
         set(gca,'xtick',[1 6.25 12.5 18.75 25]*n_score_bins/25,'xticklabels',[0 0.25 0.5  0.75 1]);
     else
         set(gca,'xtick',[1 6.25 12.5 18.75 25]*n_score_bins/25,'xticklabels',[]);
     end
     set(gca,'Fontsize',12);
-    xlim([25 50])
 end
 
 saveas(prec_prob_fig,[FigPath 'prec_prob_hm.png'])
@@ -303,14 +302,13 @@ for i = 1:4
     nexttile
     p = imagesc(flipud(sharp_prob_array(:,:,i)));
 %     p.EdgeAlpha = 0.1;
-    set(gca,'ytick',[1 12.5 25],'yticklabels',fliplr([0 0.5 1]));
+    set(gca,'ytick',[1 12.5 25],'yticklabels',[0 0.5 1]);
     if i == 4
       set(gca,'xtick',[1 6.25 12.5 18.75 25]*n_score_bins/25,'xticklabels',[0 0.25 0.5  0.75 1]);
     else
         set(gca,'xtick',[1 6.25 12.5 18.75 25]*n_score_bins/25,'xticklabels',[]);
     end
     set(gca,'Fontsize',12);
-    xlim([12.5 50])
 end
 
 saveas(sharp_prob_fig,[FigPath 'sharp_prob_hm.png'])
@@ -335,7 +333,6 @@ for i = 1:8
         set(gca,'xtick',[1 6.25 12.5 18.75 25]*n_score_bins/25,'xticklabels',[]);
     end
     set(gca,'Fontsize',12);
-    xlim([25 50])
 end
 
 saveas(prec_rate_fig,[FigPath 'prec_rate_hm.png'])
@@ -358,7 +355,6 @@ for i = 1:8
         set(gca,'xtick',[1 6.25 12.5 18.75 25]*n_score_bins/25,'xticklabels',[]);
     end
     set(gca,'Fontsize',12);
-    xlim([12.5 50])
 end
 
 saveas(sharp_rate_fig,[FigPath 'sharp_rate_hm.png'])
