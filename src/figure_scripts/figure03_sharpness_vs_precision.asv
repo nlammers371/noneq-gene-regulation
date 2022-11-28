@@ -104,17 +104,17 @@ scatter(sharpness_vec_eq(plot_indices_eq),precision_vec_eq(plot_indices_eq),mark
             cmap(3,:),'MarkerEdgeColor','k','MarkerEdgeAlpha',0.5,'MarkerFaceAlpha',0.5) 
           
 % plot position of 100 best IR gene circuits
-% scatter(sharpness_vec_neq(s_indices_plot),precision_vec_neq(s_indices_plot),...
-%         markerSize,'MarkerEdgeAlpha',1,'MarkerEdgeColor','k','MarkerFaceAlpha',0.5,...
-%       'MarkerFaceColor',brighten(cmap(5,:),-0.5)); 
-%     
+scatter(sharpness_vec_neq(s_indices_plot),precision_vec_neq(s_indices_plot),...
+        markerSize,'MarkerEdgeAlpha',1,'MarkerEdgeColor','k','MarkerFaceAlpha',0.5,...
+      'MarkerFaceColor',brighten(cmap(5,:),-0.5)); 
+    
 scatter(sharpness_vec_neq(ir_indices_plot),precision_vec_neq(ir_indices_plot),...
         markerSize,'MarkerEdgeAlpha',1,'MarkerEdgeColor','k','MarkerFaceAlpha',0.5,...
       'MarkerFaceColor',brighten(cmap(8,:),-0.5)); 
     
-% scatter(sharpness_vec_neq(p_indices_plot),precision_vec_neq(p_indices_plot),...
-%     markerSize,'MarkerEdgeAlpha',1,'MarkerEdgeColor','k','MarkerFaceAlpha',0.5,...
-%   'MarkerFaceColor',cmap_rd(6,:)); 
+scatter(sharpness_vec_neq(p_indices_plot),precision_vec_neq(p_indices_plot),...
+    markerSize,'MarkerEdgeAlpha',1,'MarkerEdgeColor','k','MarkerFaceAlpha',0.5,...
+  'MarkerFaceColor',cmap_rd(6,:)); 
        
 
 xlabel('sharpness (S)');
@@ -211,7 +211,7 @@ cmap = brewermap(8,'Set2');
 cmap_rd = brewermap(8,'Reds');
 
 hold on
-n_cycles = 50;%60/5;
+n_cycles = 25;%60/5;
 % calculate upper and lower bounds 
 ubeq = r_curve_eq + p_curve_eq/sqrt(n_cycles);
 lbeq = r_curve_eq - p_curve_eq/sqrt(n_cycles);
@@ -262,81 +262,76 @@ saveas(induction_plots_sym,[FigPath 'motif_induction_4state.png'])
 saveas(induction_plots_sym,[FigPath 'motif_induction_4state.pdf'])    
 
 %% make illustrative scatter ploits in neighborhood of c1 and c0
-xl = [0.9 1.1];
-yl = [0.42 0.58];
+
 % get indices for c1 and c0
 [~,c1_i] = min(abs(c_vec-c1));
 [~,c0_i] = min(abs(c_vec-c0));
 
-scatter_fig = figure('Position',[100 100 512 256]);
-tiledlayout(1,3)
-
-nexttile
+eq_fig = figure('Position',[100 100 256 256]);
+cmap = brewermap(8,'Set2');
+cmap_rd = brewermap(8,'Reds');
 
 hold on
 
 % make area plots to indicate error range for each
 errorbar([c0 c1], r_curve_eq([c0_i, c1_i]), p_curve_eq([c0_i, c1_i])/sqrt(n_cycles),'.', 'Color','k','CapSize',0);
 scatter([c0 c1], r_curve_eq([c0_i, c1_i]),100,'MarkerFaceColor',ceq,'MarkerEdgeColor','k')
-box on
+
 % set(gca,'xtick',[0.2 1 5])
-xlim(xl)
-ylim(yl)
+xlim([0.8 1.2])
+ylim([0.4 0.6])
+xlabel('activator concentration (c)');
+ylabel('transcription rate (r)')
 
 % legend([peq pneq pp],'equilibrium','non-eq. (sharp)','non-eq. (precise)','Location','northwest')
 % grid on
 
 set(gca,'FontSize',14)
 set(gca,'Color',[228,221,209]/255) 
-grid on
-scatter_fig.InvertHardcopy = 'off';
+
+eq_fig.InvertHardcopy = 'off';
 set(gcf,'color','w');
-set(gca,'xticklabel',[])
-% neq_fig = figure('Position',[100 100 256 256]);
 
-% hold on
+neq_fig = figure('Position',[100 100 256 256]);
 
-nexttile
 hold on
+
 % make area plots to indicate error range for each
 errorbar([c0 c1], r_curve_neq([c0_i, c1_i]), p_curve_neq([c0_i, c1_i])/sqrt(n_cycles),'.', 'Color','k','CapSize',0);
 scatter([c0 c1], r_curve_neq([c0_i, c1_i]),100,'MarkerFaceColor',ir_color,'MarkerEdgeColor','k')
 
 % set(gca,'xtick',[0.2 1 5])
-xlim(xl)
-ylim(yl)
+xlim([0.8 1.2])
+ylim([0.4 0.6])
 box on
 % xlabel('activator concentration (c)');
 % ylabel('transcription rate (r)')
-set(gca,'yticklabel',[])
-set(gca,'xticklabel',[])
+
 % legend([peq pneq pp],'equilibrium','non-eq. (sharp)','non-eq. (precise)','Location','northwest')
 % grid on
 
 set(gca,'FontSize',14)
 set(gca,'Color',[228,221,209]/255) 
-grid on
-% neq_fig.InvertHardcopy = 'off';
+
+neq_fig.InvertHardcopy = 'off';
 set(gcf,'color','w');
 
-% prec_fig = figure('Position',[100 100 256 256]);
-nexttile
+prec_fig = figure('Position',[100 100 256 256]);
 hold on
-set(gca,'yticklabel',[])
-set(gca,'xticklabel',[])
+
 % make area plots to indicate error range for each
 errorbar([c0 c1], r_curve_neq_p([c0_i, c1_i]), p_curve_neq_p([c0_i, c1_i])/sqrt(n_cycles),'.', 'Color','k','CapSize',0);
 scatter([c0 c1], r_curve_neq_p([c0_i, c1_i]),100,'MarkerFaceColor',cp,'MarkerEdgeColor','k')
 
 % set(gca,'xtick',[0.2 1 5])
-xlim(xl)
-ylim(yl)
+xlim([0.8 1.2])
+ylim([0.4 0.6])
 box on
-% xlabel('activator concentration (c)');
-% ylabel('transcription rate (r)')
+xlabel('activator concentration (c)');
+ylabel('transcription rate (r)')
 
 % legend([peq pneq pp],'equilibrium','non-eq. (sharp)','non-eq. (precise)','Location','northwest')
-grid on
+% grid on
 
 set(gca,'FontSize',14)
 set(gca,'Color',[228,221,209]/255) 
@@ -344,8 +339,6 @@ set(gca,'Color',[228,221,209]/255)
 prec_fig.InvertHardcopy = 'off';
 set(gcf,'color','w');
 
-saveas(scatter_fig,[FigPath 'scatter_motif_c1c0.png'])
-saveas(scatter_fig,[FigPath 'scatter_motif_c1c0.pdf']) 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% %%%%%%%%%%%%%%% Examine impact of adding binding sites %%%%%%%%%%%%%%%%%
 % get metric names for numeric sweeps
