@@ -24,7 +24,7 @@ sweep_options = {'n_sim',5,'n_seeds',5,'n_iters_max',50};
 
 nStates = 4;
 % functionPath = ['../utilities/metricFunctions/n' num2str(nStates) '_OR/'];
-functionPath = '../utilities/metricFunctions/symbolic/n004_s01_ns00_g01';
+functionPath = ['..' filesep 'utilities' filesep 'metricFunctions' filesep 'symbolic' filesep 'n004_s01_ns00_g01'];
 
 % get metric names 
 [~,~,metric_names_sym] = calculateMetricsSym_v2([]);
